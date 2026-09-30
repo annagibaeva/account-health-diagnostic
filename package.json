@@ -1,0 +1,14 @@
+{
+  "name": "account-health-diagnostic",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "start": "node prototype/server.mjs",
+    "test": "node --test prototype/diagnostic.test.mjs prototype/connections.test.mjs prototype/features/action-inbox.test.mjs prototype/features/reproduction-packet.test.mjs prototype/features/review.test.mjs"
+  },
+  "description": "Explainable account-health and customer-success workflow using synthetic telemetry",
+  "engines": {
+    "node": ">=22"
+  }
+}

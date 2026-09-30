@@ -1,0 +1,2 @@
+# Optional model-assisted mode only; offline mode uses the Python standard library.
+openai-agents

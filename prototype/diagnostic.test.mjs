@@ -1,0 +1,13 @@
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { diagnose, account, teams, initialWorkspace, outcome, successMetrics } from './diagnostic.mjs';
+test('Payments is stalled and declining with a valid adoption score',()=>{const d=diagnose(teams[1]);assert.equal(d.score.toFixed(1),'58.2');assert.equal(d.stalled,true);assert.equal(d.declining,true);assert.equal(d.action,3)});
+test('missing Analytics withholds score and trends',()=>{const d=diagnose(teams[1],'current');assert.equal(d.score,null);assert.equal(d.stalled,null);assert.equal(d.action,0)});
+test('missing contribution does not suppress adoption score',()=>{const d=diagnose(teams[1],'tracking');assert.notEqual(d.score,null);assert.equal(d.contribution,null);assert.equal(d.action,1)});
+test('baseline insufficiency does not become stable trend',()=>{const d=diagnose(teams[1],'prior');assert.equal(d.delta,null);assert.equal(d.action,2)});
+test('account headcount gate includes exactly 80 percent',()=>{assert.notEqual(account(1,'current').score,null);assert.equal(account(2,'current').score,null);assert.equal(account(2,'current').headcount,315)});
+test('stalled boundaries and status use unrounded scores',()=>{assert.equal(diagnose({...teams[1],a:55,p:55}).stalled,false);assert.equal(diagnose({...teams[1],a:54,p:52}).stalled,true);assert.equal(diagnose({...teams[1],a:54,p:51}).stalled,false);assert.equal(diagnose({...teams[1],a:70,u:69}).status,'Watch')});
+test('execution complete alone cannot count as an achieved outcome',()=>{const d={...initialWorkspace().deployments[0],status:'Complete'};assert.equal(outcome(d),'Insufficient evidence');assert.equal(successMetrics([d]).met,0)});
+test('observed target requires a passed quality guardrail',()=>{const d={...initialWorkspace().deployments[0],actual:60,observed:'2026-10-14'};assert.equal(outcome(d),'Quality review pending');assert.equal(outcome({...d,quality:'Failed'}),'Guardrail failed');assert.equal(outcome({...d,quality:'Passed'}),'Target met')});
+test('lower is better metrics and zero measurements work',()=>{const d={...initialWorkspace().deployments[0],actual:0,target:2,direction:'decrease',observed:'2026-10-14',quality:'Passed'};assert.equal(outcome(d),'Target met');assert.equal(outcome({...d,actual:3}),'Target not met')});
+test('success denominator excludes unavailable and pending outcomes',()=>{const base=initialWorkspace().deployments[0];const records=[base,{...base,actual:60,observed:'2026-10-14',quality:'Passed'},{...base,actual:50,observed:'2026-10-14',quality:'Passed'}];const m=successMetrics(records);assert.equal(m.met,1);assert.equal(m.assessable,2);assert.equal(m.pending,1)});
