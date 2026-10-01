@@ -161,7 +161,7 @@ function initializeWorkflowFeatures(){
   openIntervention=ctx.openIntervention;
   $('new-deployment').parentElement.append(button('Load synthetic example',()=>{loadExampleIntervention(workspace);saveInternal();openIntervention(EXAMPLE_INTERVENTION_ID,'overview')}));
   workflowFeatures=[mountSuccessPlan(ctx),mountActionInbox(ctx),mountReproductionPacket(ctx),reviewFeature,mountReviewedQbr(ctx),mountOperations(ctx),interventionFeature];
-  const nav=document.querySelector('nav');nav.querySelector('.navlabel').textContent='Workspace';
+  const nav=document.querySelector('nav');
   nav.querySelector('[data-page="report"]').remove();
   const overview=node('button','Account summary','navbutton');overview.dataset.page='workflow';nav.append(overview);
   for(const [label,ids] of [['Account workflow',['workflow','plan','inbox','packets','outcomes','qbr']],['Analysis & operations',['overview','reasoning','deployments','success','feedback','agents','operations']]]){
