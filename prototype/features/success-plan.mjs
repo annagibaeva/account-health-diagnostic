@@ -1,9 +1,9 @@
 export function initialSuccessPlan() {
   return {
-    sponsor: 'CTO · fictional stakeholder', champion: 'Payments engineering lead · fictional stakeholder',
+    sponsor: '', champion: '',
     customerGoal: 'Improve payment-service maintenance while preserving review quality.',
     successCriteria: 'Proposed: validate one repeatable maintenance workflow with developer feedback and review-quality evidence. Targets require customer agreement.',
-    reviewDate: '', notes: 'Discovery draft for a fictional account. No customer agreement has been recorded.',
+    reviewDate: '', notes: '', sourceReferences: '',
     objectives: []
   };
 }
@@ -12,17 +12,21 @@ export function mountSuccessPlan(ctx) {
   const {node, button, field} = ctx;
   const section = node('section', ''); section.dataset.screen = 'plan'; section.hidden = true;
   const heading = node('div', '', 'heading'); const intro = node('div', '');
-  intro.append(node('div', '01 / ACCOUNT SUCCESS PLAN', 'eyebrow'), node('h1', 'Start with the customer’s goal.'), node('p', 'Connect objectives, stakeholders and the work that will demonstrate progress.', 'muted'));
+  intro.append(node('div', '01 / ACCOUNT SUCCESS PLAN', 'eyebrow'), node('h1', 'Customer overview'), node('p', 'Goals, account information and stakeholders in one place.', 'muted'));
   heading.append(intro, button('Next: action inbox →', () => ctx.navigate('inbox')));
-  const banner = node('div', 'FICTIONAL INTERNAL ACCOUNT · Local browser records. Objectives and targets are proposals until independently agreed with the customer.', 'internal-banner');
+  const banner = node('div', 'Example customer · APAC banking · 400 engineers · 6 teams · Synthetic portfolio account', 'account-context');
   const form = node('form', '', 'editor'); form.id = 'success-plan-form';
-  form.append(node('h2', 'Account intent & stakeholders'));
+  form.append(node('h2', 'Account information & stakeholders'));
+  form.append(node('p', 'Capture what the customer wants, who is involved and how success will be agreed.', 'muted'));
   const fields = node('div', '', 'form-grid'); form.append(fields);
   const submit = node('button', 'Save success plan', 'action primary'); submit.type = 'submit'; form.append(submit);
   const status = node('p', '', 'small'); status.setAttribute('role', 'status');
   const objectiveHeading = node('div', '', 'heading'); objectiveHeading.append(node('h2', 'Customer objectives'), button('Add objective +', () => editObjective()));
   const list = node('div', '', 'record-grid');
   const editor = node('form', '', 'editor'); editor.hidden = true; editor.id = 'success-objective-form';
+  const sources = node('div', '', 'source-guide');
+  sources.append(node('h3', 'Where account information comes from'), node('p', 'Meeting transcripts and customer conversations → goals, priorities and stakeholders. Contracts and CRM records → agreed scope and account details. QBRs and MBRs → discovery notes, decisions and next steps.', 'small'), node('p', 'Manual entry today. Automatic import and extraction are not connected. Record a document title, date and link below so another team member can verify the context.', 'muted'));
+  form.insertBefore(sources, fields);
   section.append(heading, banner, form, status, objectiveHeading, list, editor);
   document.querySelector('main').append(section);
   const nav = node('button', 'Account success plan', 'navbutton'); nav.dataset.page = 'plan'; document.querySelector('nav').append(nav);
@@ -37,7 +41,7 @@ export function mountSuccessPlan(ctx) {
   form.onsubmit = e => {
     e.preventDefault();
     for (const [key, input] of Object.entries(inputs)) plan()[key] = input.value.trim();
-    ctx.saveWorkspace(); status.textContent = 'Plan updated locally. Saving does not establish customer agreement.';
+    ctx.saveWorkspace(); status.textContent = 'Changes submitted. Customer agreement should be documented in the source references.';
   };
   function editObjective(id) {
     const objective = plan().objectives.find(o => o.id === id) || {title:'',owner:'',targetDate:'',deploymentIds:[]};
@@ -72,8 +76,15 @@ export function mountSuccessPlan(ctx) {
     if (!initialized) {
       for (const [key,label,options] of [
         ['customerGoal','Customer goal',{type:'textarea'}], ['successCriteria','Success criteria / agreement context',{type:'textarea'}],
-        ['sponsor','Executive sponsor'], ['champion','Technical champion'], ['reviewDate','Next account review',{type:'date',optional:true}], ['notes','Internal discovery notes',{type:'textarea',optional:true}]
+        ['sponsor','Executive sponsor',{optional:true}], ['champion','Technical champion',{optional:true}], ['reviewDate','Next account review',{type:'date',optional:true}], ['notes','Internal discovery notes',{type:'textarea',optional:true}], ['sourceReferences','Source references',{type:'textarea',optional:true}]
       ]) inputs[key] = field(fields,'plan-',key,label,current[key],options);
+      if(inputs.sponsor.value==='CTO · fictional stakeholder') inputs.sponsor.value='';
+      if(inputs.champion.value==='Payments engineering lead · fictional stakeholder') inputs.champion.value='';
+      if(inputs.notes.value==='Discovery draft for a fictional account. No customer agreement has been recorded.') inputs.notes.value='';
+      inputs.sponsor.placeholder='e.g. CEO, CTO or VP of Engineering';
+      inputs.champion.placeholder='e.g. Engineering lead, Staff engineer or Platform lead';
+      inputs.notes.placeholder='Key context from QBRs, MBRs and customer conversations: priorities, decisions, blockers and next steps.';
+      inputs.sourceReferences.placeholder='e.g. Quarterly business review · 1 Oct 2026 · document link · goal and next steps';
       initialized = true;
     }
     list.replaceChildren();

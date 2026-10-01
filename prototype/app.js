@@ -15,7 +15,7 @@ try {const saved=JSON.parse(localStorage.getItem(key));if(saved){if(saved.theme=
 function persist(){try{localStorage.setItem(key,JSON.stringify({theme}))}catch{}if(workspace&&sharedClient){workspace.actionOverrides={...edits};saveInternal();$('save-status').textContent='Action submitted to shared workspace'}}
 function actionFor(i){return edits[i]??(i===3?'Review permitted workflows with the team lead before considering expansion.':actions[diagnose(teams[i]).action])}
 function node(tag,text,cls){const n=document.createElement(tag);n.textContent=text;if(cls)n.className=cls;return n}
-function navigate(p){page=p==='report'?'qbr':p;render();document.querySelector('main').scrollIntoView({block:'start'})}
+function navigate(p){page=p==='report'?'qbr':p;const group=document.querySelector(`nav [data-page="${page}"]`)?.closest('details');if(group)group.open=true;render();document.querySelector('main').scrollIntoView({block:'start'})}
 function render(){
   document.documentElement.style.colorScheme=theme;$('theme').textContent='Switch to '+(theme==='dark'?'light':'dark');
   document.querySelectorAll('[data-screen]').forEach(n=>n.hidden=n.dataset.screen!==page);document.querySelectorAll('[data-page]').forEach(n=>n.setAttribute('aria-pressed',String(n.dataset.page===page)));
@@ -44,6 +44,7 @@ var sharedClient=sharedWorkspaceClient({status:message=>{
   internalMessage=message;
   if($('internal-save'))$('internal-save').textContent=message;
   if($('shared-persistence-message'))$('shared-persistence-message').textContent=message;
+  if($('shared-persistence-status'))$('shared-persistence-status').hidden=/^(Shared workspace ·|Saved to shared workspace ·|Saving shared workspace)/.test(message);
 }});
 try {
   workspace=await sharedClient.load();
@@ -54,14 +55,16 @@ try {
   edits={};
 }
 const sharedNotice=node('div','','internal-banner');
+sharedNotice.hidden=/^(Shared workspace ·|Saved to shared workspace ·)/.test(internalMessage);
 sharedNotice.id='shared-persistence-status';
 const sharedMessage=node('p',internalMessage);sharedMessage.id='shared-persistence-message';sharedMessage.setAttribute('role','status');sharedNotice.append(sharedMessage);
 document.querySelector('main').prepend(sharedNotice);
 try {
   const legacy=localStorage.getItem('signal-internal-mvp');
   if(legacy){
-    sharedNotice.append(node('p','Previous browser records are preserved separately. Download and review them before entering any changes in the shared workspace.'));
-    sharedNotice.append(button('Download previous browser records',()=>{
+    const legacyNotice=node('details','','legacy-records');legacyNotice.append(node('summary','Previous browser records'));
+    document.querySelector('.sidebar-bottom').append(legacyNotice);
+    legacyNotice.append(button('Download previous browser records',()=>{
       const url=URL.createObjectURL(new Blob([legacy],{type:'application/json'}));
       const link=document.createElement('a');link.href=url;link.download='previous-browser-records.json';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
     }));
@@ -98,11 +101,24 @@ var workflowFeatures;
 function initializeWorkflowFeatures(){
   const ctx={getWorkspace:()=>workspace,saveWorkspace:saveInternal,navigate,openDeployment,openFeedback,node,field,button,outcome,getEvidence:()=>evidenceCatalog};
   workflowFeatures=[mountSuccessPlan(ctx),mountActionInbox(ctx),mountReproductionPacket(ctx),mountOutcomeReview(ctx),mountReviewedQbr(ctx),mountOperations(ctx)];
-  const nav=document.querySelector('nav');nav.querySelector('.navlabel').textContent='Account workflow';
-  const legacy=nav.querySelector('[data-page="report"]');legacy.hidden=true;
-  for(const id of ['plan','inbox','packets','outcomes','qbr']){const b=nav.querySelector(`[data-page="${id}"]`);if(b)nav.append(b)}
-  nav.append(node('div','Analysis & operations','eyebrow navlabel'));
-  for(const id of ['overview','reasoning','deployments','success','feedback','agents','operations']){const b=nav.querySelector(`[data-page="${id}"]`);if(b)nav.append(b)}
+  const nav=document.querySelector('nav');nav.querySelector('.navlabel').textContent='Workspace';
+  nav.querySelector('[data-page="report"]').remove();
+  const overview=node('button','Workflow overview','navbutton');overview.dataset.page='workflow';nav.append(overview);
+  for(const [label,ids] of [['Account workflow',['workflow','plan','inbox','packets','outcomes','qbr']],['Analysis & operations',['overview','reasoning','deployments','success','feedback','agents','operations']]]){
+    const group=node('details','','nav-group');group.open=label==='Account workflow';
+    const summary=node('summary',label);group.append(summary);
+    const items=node('div','','nav-items');group.append(items);
+    for(const id of ids){const b=nav.querySelector(`[data-page="${id}"]`);if(b)items.append(b)}
+    nav.append(group);
+  }
+  const summary=node('section','');summary.dataset.screen='workflow';summary.hidden=true;
+  summary.append(node('div','ACCOUNT WORKFLOW','eyebrow'),node('h1','One account. A shared plan.'),node('p','Understand the customer, coordinate the next action and review the evidence before sharing the result.','muted'));
+  const stats=node('div','','mini-stats');const cards=node('div','','record-grid');summary.append(stats,cards);document.querySelector('main').append(summary);
+  for(const [id,title,description] of [['plan','01 / Account success plan','Customer goals, stakeholders and source context.'],['inbox','02 / Action inbox','Priorities, accountable owners and next steps.'],['packets','03 / Reproduction packet','Turn technical friction into an actionable investigation.'],['outcomes','04 / Outcome review','Compare measurements and decide what happens next.'],['qbr','05 / Reviewed QBR','Share evidence-backed results after human review.']]){
+    const card=node('article','','record');card.append(node('h2',title),node('p',description,'muted'),button('Open →',()=>navigate(id)));cards.append(card);
+  }
+  workflowFeatures.push({render(){stats.replaceChildren();for(const [label,value] of [['Customer goal',workspace.successPlan?.customerGoal||'Not recorded'],['Open interventions',String(workspace.deployments.filter(d=>d.status!=='Complete').length)],['Next account review',workspace.successPlan?.reviewDate||'Not scheduled']]){const item=node('div','');item.append(node('div',label,'eyebrow'),node('p',value));stats.append(item)}}});
+  page='workflow';
 }
 function renderWorkflowFeatures(){for(const feature of workflowFeatures??[])feature.render()}
 function button(text,fn){const b=node('button',text,'action');b.type='button';b.onclick=fn;return b}
