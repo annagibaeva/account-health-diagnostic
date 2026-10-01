@@ -83,7 +83,7 @@ var sharedClient=sharedWorkspaceClient({status:message=>{
   internalMessage=message;
   if($('internal-save'))$('internal-save').textContent=message;
   if($('shared-persistence-message'))$('shared-persistence-message').textContent=message;
-  if($('shared-persistence-status'))$('shared-persistence-status').hidden=/^(Shared workspace ·|Saved to shared workspace ·|Saving shared workspace)/.test(message);
+  if($('shared-persistence-status'))$('shared-persistence-status').hidden=/^(Ready|Saved|Saving)/.test(message);
 }});
 try {
   workspace=await sharedClient.load();
@@ -94,7 +94,7 @@ try {
   edits={};
 }
 const sharedNotice=node('div','','internal-banner');
-sharedNotice.hidden=/^(Shared workspace ·|Saved to shared workspace ·)/.test(internalMessage);
+sharedNotice.hidden=/^(Ready|Saved|Saving)/.test(internalMessage);
 sharedNotice.id='shared-persistence-status';
 const sharedMessage=node('p',internalMessage);sharedMessage.id='shared-persistence-message';sharedMessage.setAttribute('role','status');sharedNotice.append(sharedMessage);
 document.querySelector('main').prepend(sharedNotice);
@@ -161,7 +161,7 @@ function initializeWorkflowFeatures(){
   const summary=node('section','');summary.dataset.screen='workflow';summary.hidden=true;
   summary.append(node('div','ACCOUNT WORKFLOW','eyebrow'),node('h1','Account summary'),node('p','Understand the customer, coordinate the next action and review the evidence before sharing the result.','muted'));
   const stats=node('div','','mini-stats');const cards=node('div','','record-grid');summary.append(stats,cards);document.querySelector('main').append(summary);
-  for(const [id,title,description] of [['plan','01 / Customer overview','Customer goals, stakeholders and source context.'],['inbox','02 / Action inbox','Priorities, accountable owners and next steps.'],['packets','03 / Technical issues','Turn technical friction into an actionable investigation.'],['outcomes','04 / Intervention results','Compare measurements and decide what happens next.'],['qbr','05 / Reviewed QBR','Share evidence-backed results after human review.']]){
+  for(const [id,title,description] of [['plan','01 · Account success plan','Customer goals, stakeholders and source context.'],['inbox','02 · Action inbox','Priorities, accountable owners and next steps.'],['packets','03 · Technical issues','Turn technical friction into an actionable investigation.'],['outcomes','04 · Outcome review','Compare measurements and decide what happens next.'],['qbr','05 · Reviewed QBR','Share evidence-backed results after human review.']]){
     const card=node('article','','record');card.append(node('h2',title),node('p',description,'muted'),button('Open →',()=>navigate(id)));cards.append(card);
   }
   workflowFeatures.push({render(){stats.replaceChildren();for(const [label,value] of [['Customer goal',workspace.successPlan?.customerGoal||'Not recorded'],['Open interventions',String(workspace.deployments.filter(d=>d.status!=='Complete').length)],['Blocked',String(successMetrics(workspace.deployments).blocked)],['Targets met',successMetrics(workspace.deployments).met+' / '+successMetrics(workspace.deployments).assessable+' assessable'],['Awaiting evidence',String(successMetrics(workspace.deployments).pending)],['Next account review',workspace.successPlan?.reviewDate||'Not scheduled']]){const item=node('div','');item.append(node('div',label,'eyebrow'),node('p',value));stats.append(item)}}});
@@ -172,7 +172,7 @@ function button(text,fn){const b=node('button',text,'action');b.type='button';b.
 function labelValue(label,value){const p=node('p','');p.append(node('span',label+' · ','muted'),document.createTextNode(value));return p}
 function summary(container,items){container.replaceChildren();items.forEach(([value,label])=>{const box=node('div','','summary-item');box.append(node('div',String(value),'summary-number'),node('div',label,'small'));container.append(box)})}
 function renderInternal(){
-  if(!workspace)return;const m=successMetrics(workspace.deployments);$('internal-save').hidden=/^(Shared workspace ·|Saved to shared workspace ·|Saving shared workspace)/.test(internalMessage)||!['deployments','success','feedback'].includes(page);$('internal-save').textContent=internalMessage;
+  if(!workspace)return;const m=successMetrics(workspace.deployments);$('internal-save').hidden=/^(Ready|Saved|Saving)/.test(internalMessage)||!['deployments','success','feedback'].includes(page);$('internal-save').textContent=internalMessage;
   summary($('deployment-summary'),[[m.total,'Interventions'],[m.complete+'/'+m.total,'Execution complete'],[m.blocked,'Blocked']]);
   summary($('success-summary'),[[m.assessable?Math.round(m.met/m.assessable*100)+'%':'—',`Targets met · ${m.met}/${m.assessable} assessable`],[m.total?Math.round(m.complete/m.total*100)+'%':'—',`Execution complete · ${m.complete}/${m.total}`],[m.pending,'Awaiting outcome evidence']]);
   $('deployment-list').replaceChildren();$('objective-list').replaceChildren();
@@ -198,7 +198,7 @@ function saveDeployment(e){e.preventDefault();let data=Object.fromEntries(new Fo
 function openFeedback(id,linked){
   editingFeedback=id??null;const f=workspace.feedback.find(f=>f.id===id)??{title:'',team:workspace.deployments.find(d=>d.id===linked)?.team??teams[selected].name,workflow:'',impact:'',evidence:'',severity:'Medium',status:'New',owner:'',deployment:linked??''};$('feedback-editor-title').textContent=id?'Triage feedback / '+id:'Capture product feedback';const c=$('feedback-fields');c.replaceChildren();const config=[['title','Feedback title'],['team','Affected team',{options:teams.map(t=>t.name)}],['workflow','Affected workflow'],['impact','Customer impact',{type:'textarea'}],['evidence','Evidence / reproduction details',{type:'textarea'}],['severity','Severity',{options:['Low','Medium','High']}],['status','Feedback status',{options:['New','Needs reproduction','Triaged','Shared with product','Resolved']}],['owner','Internal owner'],['deployment','Linked intervention',{options:[{label:'No linked intervention',value:''},...workspace.deployments.map(d=>({label:d.id+' · '+d.title,value:d.id}))],optional:true}]];config.forEach(([k,l,opts])=>field(c,'fb-',k,l,f[k],opts));addRecordFields(c,'fb-',f);$('feedback-editor').hidden=false;$('feedback-editor').scrollIntoView({block:'start'});
 }
-function saveFeedback(e){e.preventDefault();const f=Object.fromEntries(new FormData(e.target));f.id=editingFeedback??'FB-'+crypto.randomUUID().slice(0,8);const index=workspace.feedback.findIndex(x=>x.id===f.id);if(index<0)workspace.feedback.push(f);else workspace.feedback[index]=f;$('feedback-editor').hidden=true;editingFeedback=null;saveInternal()}
+function saveFeedback(e){e.preventDefault();const f=Object.fromEntries(new FormData(e.target));f.id=editingFeedback??'FB-'+crypto.randomUUID().slice(0,8);const index=workspace.feedback.findIndex(x=>x.id===f.id);if(index<0)workspace.feedback.push(f);else workspace.feedback[index]={...workspace.feedback[index],...f};$('feedback-editor').hidden=true;editingFeedback=null;saveInternal()}
 
 function initializeConnectors(){
   const entry=node('button','⌘  Connectors','navbutton connector-entry');entry.dataset.page='connectors';document.querySelector('.sidebar-bottom').prepend(entry);

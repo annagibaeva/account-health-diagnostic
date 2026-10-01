@@ -34,7 +34,8 @@ export function deriveInbox(workspace = {}, today = localToday()) {
   }
   for (const f of workspace.feedback ?? []) {
     if (!['New','Needs reproduction'].includes(f.status)) continue;
-    items.push({id:'feedback:'+f.id,source:'feedback',sourceId:f.id,title:f.title,team:f.team,owner:f.owner || 'Unassigned',due:null,actual:null,priority:f.severity === 'High'?1:2,reasons:[f.status === 'New'?'Feedback needs triage — assess impact and the next step.':'Reproduction needed — prepare sanitized steps and expected / actual behavior.']});
+    const due=dateValue(f.due),overdue=due!==null&&due<current;
+    items.push({id:'feedback:'+f.id,source:'feedback',sourceId:f.id,title:f.title,team:f.team,owner:f.owner || 'Unassigned',due:due===null?null:f.due,actual:null,priority:overdue||f.severity === 'High'?1:2,reasons:[...(overdue?['Overdue']:[]),f.status === 'New'?'Feedback needs triage.':'Reproduction needed.']});
   }
   return items.sort((a,b)=>a.priority-b.priority || (a.due??'9999').localeCompare(b.due??'9999') || String(a.id).localeCompare(String(b.id)));
 }
@@ -43,7 +44,7 @@ export function mountActionInbox(ctx) {
   const {node,button} = ctx;
   let owner = 'All owners';
   const section = node('section',''); section.dataset.screen = 'inbox'; section.hidden = true;
-  const nav = node('button','Action inbox','navbutton'); nav.dataset.page='inbox'; nav.type='button';
+  const nav = node('button','02 · Action inbox','navbutton'); nav.dataset.page='inbox'; nav.type='button';
   document.querySelector('nav').append(nav);
   document.querySelector('main').append(section);
   function render() {
@@ -52,22 +53,27 @@ export function mountActionInbox(ctx) {
     if (!owners.includes(owner)) owner='All owners';
     section.replaceChildren();
     const heading=node('div','','heading'), intro=node('div','');
-    intro.append(node('div','Internal workflow / accountable next steps','eyebrow'),node('h1','Move the next action forward.'),node('p',`As of ${today} · local calendar date · due soon means today through the next 7 days.`,'muted'));
+    intro.append(node('h1','02 · Action inbox'),node('p',`As of ${today}`,'muted'));
     heading.append(intro,button('Refresh priorities',render)); section.append(heading);
-    section.append(node('p','Derived from deployment plans and product feedback. Open the original record to update it; this inbox does not create duplicate tasks. Missing measurements remain unavailable.','internal-banner'));
     const label=node('label','Owner','filter-label'), select=node('select',''); select.setAttribute('aria-label','Filter inbox by owner');
     for (const name of ['All owners',...owners]) {const option=node('option',name);option.value=name;select.append(option)}
     select.value=owner;select.onchange=()=>{owner=select.value;render()};label.append(select);section.append(label);
     const visible=items.filter(item=>owner==='All owners'||item.owner===owner);
-    section.append(node('p',`${visible.length} source records need attention · ordered by blocked or failed guardrails, overdue work, then upcoming work and evidence.`,'small'));
+    section.append(node('p',`${visible.length} actions need attention`,'small'));
     const grid=node('div','','record-grid');section.append(grid);
     if (!visible.length) grid.append(node('p','No open attention items match this owner.','muted'));
     for (const item of visible) {
-      const card=node('article','','record');card.append(node('div',`${item.sourceId} / ${item.team ?? 'Account'}`,'eyebrow'),node('h2',item.title),node('p',`Owner · ${item.owner}`),node('p',`Due · ${item.due ?? 'Not recorded'}`,'small'));
+      const card=node('article','','record');card.append(node('div',`${item.sourceId} / ${item.team ?? 'Account'}`,'eyebrow'),node('h2',item.title));
       const reasons=node('ul','');for(const reason of item.reasons) reasons.append(node('li',reason));card.append(reasons);
       if(item.source==='deployment') card.append(node('p',`Recorded result · ${item.actual === null?'Unavailable':item.actual}`,'small'),button('Open deployment / update outcome',()=>{ctx.navigate('deployments');ctx.openDeployment(item.sourceId)}));
       else card.append(button('Open feedback / triage',()=>{ctx.navigate('feedback');ctx.openFeedback(item.sourceId)}),button('Open technical issues',()=>ctx.navigate('packets')));
-      const source=ctx.getWorkspace()[item.source==='deployment'?'deployments':'feedback'].find(r=>r.id===item.sourceId);if(ctx.recordLinks)card.append(ctx.recordLinks(source));grid.append(card);
+      const source=ctx.getWorkspace()[item.source==='deployment'?'deployments':'feedback'].find(r=>r.id===item.sourceId);
+      const assignment=node('form','','assignment-form'),fields=node('div','','form-grid');
+      const ownerInput=ctx.field(fields,'assign-'+item.sourceId+'-','owner','Owner',source.owner);
+      const dueInput=ctx.field(fields,'assign-'+item.sourceId+'-','due','Due date',source.due,{type:'date',optional:true});
+      const save=node('button','Save owner & date','action');save.type='submit';assignment.append(fields,save);
+      assignment.onsubmit=e=>{e.preventDefault();if(!ownerInput.value.trim()){ownerInput.setCustomValidity('Enter an owner.');ownerInput.reportValidity();return}source.owner=ownerInput.value.trim();source.due=dueInput.value;ctx.saveWorkspace()};card.append(assignment);
+      if(ctx.recordLinks){const links=node('details','');links.append(node('summary','Links & notifications'),ctx.recordLinks(source));card.append(links)}grid.append(card);
     }
   }
   render();

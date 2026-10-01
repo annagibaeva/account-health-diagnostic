@@ -16,16 +16,16 @@ export function mountReproductionPacket(ctx) {
   const { node, button, field, getWorkspace, saveWorkspace, navigate } = ctx;
   const section = node('section', '');
   section.dataset.screen = 'packets'; section.hidden = true;
-  const nav = node('button', 'Technical issues', 'navbutton');
+  const nav = node('button', '03 · Technical issues', 'navbutton');
   nav.dataset.page = 'packets'; document.querySelector('nav').append(nav);
   document.querySelector('main').append(section);
   const heading = node('div', '', 'heading'), introduction = node('div', '');
-  introduction.append(node('div', '03 / Field Engineering', 'eyebrow'), node('h1', 'Technical issues'), node('p', 'Link customer feedback to a repeatable technical investigation.', 'muted'));
-  heading.append(introduction, button('New reproduction packet +', () => edit()));
+  introduction.append(node('h1', '03 · Technical issues'));
+  heading.append(introduction, button('New issue +', () => edit()));
   const message = node('p', '', 'small'); message.setAttribute('role', 'status');
   const list = node('div', '', 'record-grid');
   const editor = node('section', '', 'editor'); editor.hidden = true;
-  section.append(heading, node('div', 'SYNTHETIC / INTERNAL · Local records only. No ticket submission or external execution. Review sensitive data manually before exporting.', 'internal-banner'), message, list, editor, button('Continue to outcome review →', () => navigate('outcomes')));
+  section.append(heading, node('div', 'Internal records · No external ticket submitted.', 'small'), message, list, editor, button('Continue to outcome review →', () => navigate('outcomes')));
   function packets() { return getWorkspace().reproductionPackets ?? []; }
   function line(label, value) { return node('p', `${label} · ${value || 'Not recorded'}`); }
   function download(packet, format, confirmed) {
@@ -39,7 +39,7 @@ export function mountReproductionPacket(ctx) {
   }
   function render() {
     list.replaceChildren();
-    if (!packets().length) list.append(node('p', 'No reproduction packets yet. Capture a repeatable case for a feedback item.', 'muted'));
+    if (!packets().length) list.append(node('p', 'No technical issues yet.', 'muted'));
     for (const packet of packets()) {
       const check = packetCompleteness(packet), card = node('article', '', 'record');
       const feedback = getWorkspace().feedback.find(item => item.id === packet.feedbackId);
@@ -49,7 +49,7 @@ export function mountReproductionPacket(ctx) {
       if(deployment){card.append(button('Open linked intervention',()=>{ctx.navigate('deployments');ctx.openDeployment(deployment.id)}));if(ctx.recordLinks)card.append(ctx.recordLinks(deployment));}
       if(feedback)card.append(button('Open customer feedback',()=>{ctx.navigate('feedback');ctx.openFeedback(feedback.id)}));
       for (const [key,label] of [['environment','Environment'],['steps','Steps'],['expected','Expected'],['actual','Actual'],['sanitizedEvidence','Manually prepared evidence'],['workaround','Workaround']]) detail.append(line(label, packet[key]));
-      card.append(detail, button('Edit packet', () => edit(packet.id)));
+      card.append(detail, button('Edit issue', () => edit(packet.id)));
       const label = node('label', ''), confirm = document.createElement('input'); confirm.type = 'checkbox';
       label.append(confirm, document.createTextNode(' I manually reviewed this packet for secrets, personal data and customer-sensitive content.'));
       const controls = node('div', '', 'form-buttons');
@@ -62,7 +62,7 @@ export function mountReproductionPacket(ctx) {
   function edit(id) {
     const workspace = getWorkspace();
     const packet = packets().find(item => item.id === id) ?? { status: 'Draft' };
-    editor.replaceChildren(node('h2', id ? 'Edit reproduction packet' : 'New reproduction packet'));
+    editor.replaceChildren(node('h2', id ? 'Edit issue' : 'New issue'));
     const form = document.createElement('form'), fields = node('div', '', 'form-grid');
     const configs = [
       ['title','Title'],
