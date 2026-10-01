@@ -14,6 +14,20 @@ let selected=1,page='overview',scenario='normal',theme='dark',edits={};
 try {const saved=JSON.parse(localStorage.getItem(key));if(saved){if(saved.theme==='light')theme='light';if(saved.edits&&typeof saved.edits==='object')for(const [k,v] of Object.entries(saved.edits))if(/^[0-5]$/.test(k)&&typeof v==='string')edits[k]=v.slice(0,500)}}catch{}
 function persist(){try{localStorage.setItem(key,JSON.stringify({theme}))}catch{}if(workspace&&sharedClient){workspace.actionOverrides={...edits};saveInternal();$('save-status').textContent='Action submitted to shared workspace'}}
 function actionFor(i){return edits[i]??(i===3?'Review permitted workflows with the team lead before considering expansion.':actions[diagnose(teams[i]).action])}
+function healthTone(d){return !d.valid?'unknown':d.stalled||d.status==='Needs attention'?'risk':d.contribution===null?'watch':d.status==='Healthy adoption'?'healthy':'watch'}
+function renderAdoptionSummary(){
+  const summary=account(-1,'normal'),diagnostics=teams.map(t=>diagnose(t));
+  const rows=evidenceCatalog.records.filter(r=>r.metric==='agent_acceptance'&&r.period==='current'&&validEvidence(r));
+  const numerator=rows.reduce((n,r)=>n+r.numerator,0),denominator=rows.reduce((n,r)=>n+r.denominator,0);
+  const stalled=teams.filter((t,i)=>diagnostics[i].stalled),gaps=teams.filter((t,i)=>!diagnostics[i].valid||!diagnostics[i].comparable||diagnostics[i].contribution===null);
+  const stats=$('adoption-stats');stats.replaceChildren();
+  for(const [title,value,detail] of [
+    ['Adoption health',summary.score===null?'Unavailable':Math.round(summary.score)+' / 100','70% acceptance + 30% active share · '+summary.headcount+' / 400 engineers included'],
+    ['Agent edits accepted',denominator?Math.round(100*numerator/denominator)+'%':'Unavailable','Accepted ÷ suggested diffs · '+rows.length+' of '+teams.length+' teams eligible'],
+    ['Stalled teams',String(stalled.length),stalled.map(t=>t.name).join(' · ')||'No stalled teams'],
+    ['Evidence gaps',String(gaps.length),gaps.map(t=>t.name).join(' · ')||'No diagnostic gaps detected']
+  ]){const card=node('div','','stat');card.append(node('div',title,'metric-title'),node('div',value,'number'),node('div',detail,'small'));stats.append(card)}
+}
 function node(tag,text,cls){const n=document.createElement(tag);n.textContent=text;if(cls)n.className=cls;return n}
 function navigate(p){page=p==='report'?'qbr':p;const group=document.querySelector(`nav [data-page="${page}"]`)?.closest('details');if(group)group.open=true;render();document.querySelector('main').scrollIntoView({block:'start'})}
 function render(){
@@ -37,6 +51,10 @@ function render(){
   $('report-actions').replaceChildren();teams.forEach((t,i)=>$('report-actions').append(node('li',`${t.name} lead — ${actionFor(i)}`)));
   renderInternal();
   renderWorkflowFeatures();
+  renderAdoptionSummary();
+  $('team-status').dataset.tone=healthTone(base);
+  $('team-status').textContent=base.status+(base.stalled?' · Stalled':'')+(base.contribution===null?' · Tracking gap':'');
+  document.querySelectorAll('#teams .team').forEach((b,i)=>{b.dataset.tone=healthTone(diagnose(teams[i]));});
 }
 teams.forEach((t,i)=>{const o=node('option',t.name);o.value=i;$('team-select').append(o)});
 initializeInternal();
@@ -73,6 +91,14 @@ try {
 initializeConnectors();
 initializeAgents();
 initializeWorkflowFeatures();
+const accountProfile=workspace.accountProfile??{};
+$('account-customer').value=accountProfile.customer||'Example customer';$('account-country').value=accountProfile.country||'';
+$('account-header-name').textContent=$('account-customer').value;
+for(const id of ['account-customer','account-country'])$(id).onchange=()=>{
+  workspace.accountProfile={customer:$('account-customer').value.trim()||'Example customer',country:$('account-country').value.trim()};
+  $('account-header-name').textContent=workspace.accountProfile.customer;saveInternal();
+  $('account-context-status').textContent='Account context submitted for saving.';
+};
 document.querySelectorAll('[data-page]').forEach(b=>b.onclick=()=>navigate(b.dataset.page));$('prepare').onclick=()=>navigate('report');$('why').onclick=()=>{scenario='normal';navigate('reasoning')};$('team-select').onchange=e=>{selected=Number(e.target.value);render()};$('scenario').onchange=e=>{scenario=e.target.value;render()};$('intervention').oninput=e=>{edits[selected]=e.target.value;persist()};$('theme').onclick=()=>{theme=theme==='dark'?'light':'dark';persist();render()};$('print').onclick=()=>window.print();$('download').onclick=()=>{const blob=new Blob([$('report').innerText],{type:'text/plain;charset=utf-8'});const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='customer-qbr-draft.txt';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)};render();
 
 var workspace, editingDeployment, editingFeedback, internalMessage, editingEvidence;
