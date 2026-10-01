@@ -12,7 +12,7 @@ export function mountSuccessPlan(ctx) {
   const {node, button, field} = ctx;
   const section = node('section', ''); section.dataset.screen = 'plan'; section.hidden = true;
   const heading = node('div', '', 'heading'); const intro = node('div', '');
-  intro.append(node('div', '01 / ACCOUNT SUCCESS PLAN', 'eyebrow'), node('h1', 'Customer overview'), node('p', 'Goals, account information and stakeholders in one place.', 'muted'));
+  intro.append(node('div', '01 / CUSTOMER OVERVIEW', 'eyebrow'), node('h1', 'Customer overview'), node('p', 'Goals, account information and stakeholders in one place.', 'muted'));
   heading.append(intro, button('Next: action inbox →', () => ctx.navigate('inbox')));
   const banner = node('div', 'Example customer · APAC banking · 400 engineers · 6 teams · Synthetic portfolio account', 'account-context');
   const form = node('form', '', 'editor'); form.id = 'success-plan-form';
@@ -29,7 +29,7 @@ export function mountSuccessPlan(ctx) {
   form.insertBefore(sources, fields);
   section.append(heading, banner, form, status, objectiveHeading, list, editor);
   document.querySelector('main').append(section);
-  const nav = node('button', 'Account success plan', 'navbutton'); nav.dataset.page = 'plan'; document.querySelector('nav').append(nav);
+  const nav = node('button', 'Customer overview', 'navbutton'); nav.dataset.page = 'plan'; document.querySelector('nav').append(nav);
   let initialized = false;
   const plan = () => {
     const workspace = ctx.getWorkspace();

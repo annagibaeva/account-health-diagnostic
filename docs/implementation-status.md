@@ -22,3 +22,13 @@ The nightly repository workflow runs at 18:00 UTC (02:00 Singapore) and can be s
 - Cohort aggregates do not imply individual daily activity histories or causal productivity effects.
 - The optional model-assisted Python reviewers remain unverified with a live model; the working default runtime is deterministic.
 - Deployment URL and publication outcome are reported separately after hosting verification. The public source repository is not itself the application deployment.
+
+## Workflow navigation and source links
+
+Account workflow opens Account summary, with customer goals, open and blocked interventions, assessable targets and pending evidence. Customer overview contains editable account context. The diagnostic map shows all six teams before the detailed explanation; simulations affect only the selected-team detail.
+
+Interventions and product feedback accept labelled HTTPS references to PRs, conversations, screenshots and agent runs. The inbox, technical-issue handoffs and intervention results expose linked sources. Links are manually supplied; no automatic retrieval or screenshot upload is implied. Diagnostic measurements remain separately expandable.
+
+Owner notification previews use hypothetical #account-example-actions routing. Recording a demo notification persists a simulated-not-sent record in the workspace. This is not Slack delivery, identity verification or automatic owner-change notification.
+
+Diagnostic runs are three deterministic processing stages, separate from the five human workflow screens. Connections & execution contains live sync and explicitly reviewed MCP actions.

@@ -66,8 +66,8 @@ export function mountActionInbox(ctx) {
       const card=node('article','','record');card.append(node('div',`${item.sourceId} / ${item.team ?? 'Account'}`,'eyebrow'),node('h2',item.title),node('p',`Owner · ${item.owner}`),node('p',`Due · ${item.due ?? 'Not recorded'}`,'small'));
       const reasons=node('ul','');for(const reason of item.reasons) reasons.append(node('li',reason));card.append(reasons);
       if(item.source==='deployment') card.append(node('p',`Recorded result · ${item.actual === null?'Unavailable':item.actual}`,'small'),button('Open deployment / update outcome',()=>{ctx.navigate('deployments');ctx.openDeployment(item.sourceId)}));
-      else card.append(button('Open feedback / triage',()=>{ctx.navigate('feedback');ctx.openFeedback(item.sourceId)}),button('Open reproduction packets',()=>ctx.navigate('packets')));
-      grid.append(card);
+      else card.append(button('Open feedback / triage',()=>{ctx.navigate('feedback');ctx.openFeedback(item.sourceId)}),button('Open technical issues',()=>ctx.navigate('packets')));
+      const source=ctx.getWorkspace()[item.source==='deployment'?'deployments':'feedback'].find(r=>r.id===item.sourceId);if(ctx.recordLinks)card.append(ctx.recordLinks(source));grid.append(card);
     }
   }
   render();

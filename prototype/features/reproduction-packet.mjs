@@ -16,11 +16,11 @@ export function mountReproductionPacket(ctx) {
   const { node, button, field, getWorkspace, saveWorkspace, navigate } = ctx;
   const section = node('section', '');
   section.dataset.screen = 'packets'; section.hidden = true;
-  const nav = node('button', 'Reproduction packets', 'navbutton');
+  const nav = node('button', 'Technical issues', 'navbutton');
   nav.dataset.page = 'packets'; document.querySelector('nav').append(nav);
   document.querySelector('main').append(section);
   const heading = node('div', '', 'heading'), introduction = node('div', '');
-  introduction.append(node('div', '03 / Field Engineering', 'eyebrow'), node('h1', 'Make friction reproducible.'), node('p', 'Link customer feedback to a repeatable technical investigation.', 'muted'));
+  introduction.append(node('div', '03 / Field Engineering', 'eyebrow'), node('h1', 'Technical issues'), node('p', 'Link customer feedback to a repeatable technical investigation.', 'muted'));
   heading.append(introduction, button('New reproduction packet +', () => edit()));
   const message = node('p', '', 'small'); message.setAttribute('role', 'status');
   const list = node('div', '', 'record-grid');
@@ -46,6 +46,8 @@ export function mountReproductionPacket(ctx) {
       const deployment = getWorkspace().deployments.find(item => item.id === packet.deploymentId);
       card.append(node('div', `${packet.id} / INTERNAL`, 'eyebrow'), node('h2', packet.title || 'Untitled packet'), node('span', packet.status || 'Draft', 'badge'), line('Feedback', feedback ? `${feedback.id} · ${feedback.title}` : packet.feedbackId ? `${packet.feedbackId} (unavailable)` : 'Not linked'), line('Intervention', deployment ? `${deployment.id} · ${deployment.title}` : packet.deploymentId ? `${packet.deploymentId} (unavailable)` : 'Not linked'), line('Owner', packet.owner), line('Completeness', check.complete ? 'Required reproduction fields complete; reproducibility still requires investigation.' : `Missing: ${check.missing.join(', ')}`));
       const detail = node('details', ''); detail.append(node('summary', 'Inspect reproduction evidence'));
+      if(deployment){card.append(button('Open linked intervention',()=>{ctx.navigate('deployments');ctx.openDeployment(deployment.id)}));if(ctx.recordLinks)card.append(ctx.recordLinks(deployment));}
+      if(feedback)card.append(button('Open customer feedback',()=>{ctx.navigate('feedback');ctx.openFeedback(feedback.id)}));
       for (const [key,label] of [['environment','Environment'],['steps','Steps'],['expected','Expected'],['actual','Actual'],['sanitizedEvidence','Manually prepared evidence'],['workaround','Workaround']]) detail.append(line(label, packet[key]));
       card.append(detail, button('Edit packet', () => edit(packet.id)));
       const label = node('label', ''), confirm = document.createElement('input'); confirm.type = 'checkbox';
