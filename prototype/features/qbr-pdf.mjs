@@ -1,7 +1,7 @@
 // Portable one-page PDF writer. Fixed-width typography makes fit checks exact.
 // Deliberately rejects unsupported glyphs and overflow instead of silently losing content.
 export function pdfLines(text) {
- const normalized=String(text).replace(/[\u2010-\u2015]/g,'-').replace(/[\u2018\u2019]/g,"'").replace(/[\u201c\u201d]/g,'"').replace(/\u2026/g,'...');
+ const normalized=String(text).replace(/\u00b7/g,' / ').replace(/[\u2010-\u2015]/g,'-').replace(/[\u2018\u2019]/g,"'").replace(/[\u201c\u201d]/g,'"').replace(/\u2026/g,'...');
  if(/[^\x20-\x7e\r\n\t]/.test(normalized))throw new Error('PDF supports Latin ASCII text. Replace unsupported characters before export.');
  const result=[];
  for(const raw of normalized.replace(/\r/g,'').replace(/\t/g,'    ').split('\n')) {
