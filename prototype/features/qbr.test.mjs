@@ -6,8 +6,16 @@ import {qbrSource,qbrText,validateQbr,qbrExport,approvalCurrent} from './reviewe
 import {pdfLines,onePagePdf} from './qbr-pdf.mjs';
 import {evidence} from '../evidence-data.mjs';
 import {linkMeasurement} from './evidence.mjs';
+import {loadExampleIntervention} from './intervention-case.mjs';
 function reviewed(){const w=initialWorkspace();w.successPlan={customerGoal:'Evaluate maintenance workflows',notes:'PRIVATE'};const d=w.deployments[0];d.actual=55;d.observed='2026-09-28';d.evidence='Human-entered sample';w.outcomeReviews=[{deploymentId:d.id,decision:'Collect evidence',notes:'PRIVATE',evidenceSnapshot:reviewFingerprint(d)}];return w}
 function approve(w){w.reviewedQbr={narrative:'Continue the pilot.',approval:{source:qbrSource(w),narrative:'Continue the pilot.',reviewer:'Demo reviewer',at:'2026-09-30'}};return w}
+
+test('worked example exports explicit synthetic customer decision and invalidates approval when changed',()=>{
+ const w=initialWorkspace();w.successPlan={customerGoal:'Evaluate maintenance workflows'};loadExampleIntervention(w);approve(w);
+ assert.match(qbrText(w),/Customer decision \(example only\): Revise/);
+ assert.ok(qbrExport(w).length>0);
+ w.deployments.at(-1).customerDecision.decision='Stop';assert.equal(approvalCurrent(w),false);
+});
 test('numeric and causal narratives cannot be approved as facts',()=>{const w=reviewed();for(const text of ['Acceptance improved 10%.','We doubled productivity.','This caused faster delivery.','We saved engineering effort.'])assert.ok(validateQbr(w,text).length);assert.deepEqual(validateQbr(w,'Continue the pilot.'),[])});
 test('manual references are labeled and private details excluded',()=>{const text=qbrText(reviewed());assert.match(text,/\[E1\]/);assert.match(text,/manual, not independently verified/);assert.ok(!text.includes('PRIVATE'))});
 test('mismatched telemetry blocks export even after local approval',()=>{const w=reviewed(),d=w.deployments[0];d.outcomeEvidence={id:'fake',value:1};w.outcomeReviews[0].evidenceSnapshot=reviewFingerprint(d);approve(w);assert.equal(approvalCurrent(w),false);assert.throws(()=>qbrExport(w),/approval/) });

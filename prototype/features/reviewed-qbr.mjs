@@ -1,8 +1,9 @@
+import {customerDecisionCurrent} from './intervention-case.mjs';
 import {reviewFingerprint} from './outcome-review.mjs';
 import {measurementMatches,evidenceCurrent} from './evidence.mjs';
 import {pdfLines,onePagePdf} from './qbr-pdf.mjs';
 const currentReviews=w=>(w.deployments??[]).flatMap(d=>{const r=w.outcomeReviews?.find(x=>x.deploymentId===d.id);return r&&r.evidenceSnapshot===reviewFingerprint(d)?[{d,r}]:[]});
-export function qbrSource(w){return JSON.stringify({goal:w.successPlan?.customerGoal,criteria:w.successPlan?.successCriteria,objectives:(w.successPlan?.objectives??[]).map(o=>o.title),deployments:(w.deployments??[]).map(d=>[d.team,d.title,d.owner,d.due,reviewFingerprint(d)]),reviews:(w.outcomeReviews??[]).map(({actor,recordedAt,...review})=>review)})}
+export function qbrSource(w){return JSON.stringify({goal:w.successPlan?.customerGoal,criteria:w.successPlan?.successCriteria,objectives:(w.successPlan?.objectives??[]).map(o=>o.title),deployments:(w.deployments??[]).map(d=>[d.team,d.title,d.owner,d.due,reviewFingerprint(d),d.customerDecision?{decision:d.customerDecision.decision,date:d.customerDecision.date,current:customerDecisionCurrent(d),synthetic:d.customerDecision.synthetic}:null]),reviews:(w.outcomeReviews??[]).map(({actor,recordedAt,...review})=>review)})}
 export function validateQbr(w,narrative='',catalog=null){
  const errors=[];
  // Matching an arbitrary prose number to a measurement does not verify its meaning.
@@ -25,6 +26,7 @@ export function qbrText(w,narrative=''){
  lines.push('','REVIEWED OBSERVATIONS');const refs=[];let counter=0;
  for(const {d,r} of currentReviews(w)){
   const ref=`E${++counter}`;lines.push(`${d.team}: ${d.metric} [${ref}]`, `Baseline ${d.baseline}; target ${d.target}; observed ${d.actual??'unavailable'} ${d.unit}. Quality: ${d.quality}. Review decision: ${r.decision}.`, `Owner: ${d.owner||'Unassigned'}; review: ${d.due||'Not scheduled'}.`);
+  if(d.customerDecision)lines.push(customerDecisionCurrent(d)?`Customer decision${d.customerDecision.synthetic?' (example only)':''}: ${d.customerDecision.decision}; ${d.customerDecision.date}.`:'Customer decision: outdated; reconfirm before acting.');
   const evidence=d.outcomeEvidence;
   refs.push(evidence?`[${ref}] ${evidence.id}; ${evidence.datasetVersion}; ${evidence.window.start} to ${evidence.window.end}; ${evidence.numerator}/${evidence.denominator}.`: `[${ref}] ${d.id}; manual, not independently verified; ${d.observed||'no observation date'}.`);
   if(d.baselineEvidence){const b=d.baselineEvidence;refs.push(`[${ref} baseline] ${b.id}; ${b.datasetVersion}; ${b.numerator}/${b.denominator}.`)}

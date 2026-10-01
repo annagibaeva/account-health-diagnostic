@@ -1,3 +1,6 @@
+import {validateReadiness,validateWorkflowOutcome} from '../prototype/features/deployment-readiness.mjs';
+import {validateCustomerDecision} from '../prototype/features/intervention-case.mjs';
+import {validateHypothesisPlan} from '../prototype/features/hypothesis.mjs';
 import {initialWorkspace} from '../prototype/diagnostic.mjs';
 import {canExpand,reviewFingerprint} from '../prototype/features/outcome-review.mjs';
 import {qbrExport} from '../prototype/features/reviewed-qbr.mjs';
@@ -7,7 +10,7 @@ export function validateWorkspace(w){
  if(!w||w.version!==1||!Array.isArray(w.deployments)||!Array.isArray(w.feedback))throw Error('Invalid workspace');
  function walk(v,depth=0){if(depth>14)throw Error('Workspace nesting limit');if(typeof v==='string'&&v.length>100000)throw Error('Text too long');if(typeof v==='number'&&!Number.isFinite(v))throw Error('Invalid number');if(v&&typeof v==='object'){if(Object.keys(v).length>2000)throw Error('Too many records');for(const [k,x]of Object.entries(v)){if(['__proto__','constructor','prototype'].includes(k))throw Error('Invalid key');walk(x,depth+1)}}}walk(w);
  for(const list of [w.deployments,w.feedback,w.reproductionPackets??[],w.outcomeReviews??[]]){if(!Array.isArray(list)||list.length>1000)throw Error('Invalid record list');}
- const ids=new Set();for(const d of w.deployments){if(!d||typeof d.id!=='string'||ids.has(d.id)||typeof d.title!=='string'||!Number.isFinite(d.baseline)||!Number.isFinite(d.target)||(d.actual!==null&&!Number.isFinite(d.actual)))throw Error('Invalid intervention');ids.add(d.id)}
+ const ids=new Set();for(const d of w.deployments){if(!d||typeof d.id!=='string'||ids.has(d.id)||typeof d.title!=='string'||!Number.isFinite(d.baseline)||!Number.isFinite(d.target)||(d.actual!==null&&!Number.isFinite(d.actual)))throw Error('Invalid intervention');if(d.hypothesisPlan){const errors=validateHypothesisPlan(d.hypothesisPlan);if(errors.length)throw Error(errors.join(' '))}const readinessErrors=[...validateReadiness(d.readiness),...validateWorkflowOutcome(d.workflowOutcome)];if(readinessErrors.length)throw Error(readinessErrors.join(' '));ids.add(d.id)}
  return structuredClone(w);
 }
 export function store(db){return {
@@ -17,6 +20,7 @@ export function store(db){return {
  async put(revision,workspace,actor){const w=validateWorkspace(workspace);const now=new Date().toISOString();const old=await this.get();if(old.revision!==revision)return null;
  // Record the authenticated writer separately from user-entered reviewer display names.
  const same=(a,b)=>{const strip=v=>{if(!v)return v;const {actor,recordedAt,...rest}=v;return rest};return JSON.stringify(strip(a))===JSON.stringify(strip(b))};
+ for(const d of w.deployments){if(!d.customerDecision)continue;const previous=old.workspace.deployments.find(x=>x.id===d.id)?.customerDecision;if(same(d.customerDecision,previous))Object.assign(d.customerDecision,{actor:previous.actor,recordedAt:previous.recordedAt});else{validateCustomerDecision(d,d.customerDecision);if(d.customerDecision.decision==='Expand'&&[d.baselineEvidence,d.outcomeEvidence].some(e=>e&&!evidenceCurrent(e,evidence)))throw Error('Expansion requires current evidence');Object.assign(d.customerDecision,{actor,recordedAt:now})}}
  if(w.reviewedQbr?.approval){const previous=old.workspace.reviewedQbr?.approval;if(same(w.reviewedQbr.approval,previous))Object.assign(w.reviewedQbr.approval,{actor:previous.actor,recordedAt:previous.recordedAt});else {if(!w.successPlan?.customerGoal?.trim()||!w.reviewedQbr.approval.reviewer?.trim())throw Error("QBR goal and reviewer required");qbrExport(w,evidence);Object.assign(w.reviewedQbr.approval,{actor,recordedAt:now})}}
  for(const r of w.outcomeReviews??[]){const previous=old.workspace.outcomeReviews?.find(x=>x.deploymentId===r.deploymentId);if(same(r,previous)){Object.assign(r,{actor:previous.actor,recordedAt:previous.recordedAt});continue}const d=w.deployments.find(x=>x.id===r.deploymentId);if(!['Collect evidence','Expand','Revise','Stop'].includes(r.decision)||!d||!r.reviewer?.trim()||!r.notes?.trim()||r.evidenceSnapshot!==reviewFingerprint(d)||(r.decision==='Expand'&&(!canExpand(d)||[d.baselineEvidence,d.outcomeEvidence].some(e=>e&&!evidenceCurrent(e,evidence)))))throw Error('Outcome review requires current evidence and a valid decision');Object.assign(r,{actor,recordedAt:now})}
  const result=await db.prepare('UPDATE workspace SET revision=revision+1,payload=?,actor=?,updated_at=? WHERE id=? AND revision=?').bind(JSON.stringify(w),actor,now,'default',revision).run();if(result.meta.changes!==1)return null;return {revision:revision+1,workspace:w,actor,updatedAt:now}},

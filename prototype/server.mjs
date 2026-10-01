@@ -5,7 +5,7 @@ import {api} from '../hosting/worker.mjs';
 import {openLocalDb} from '../hosting/local-db.mjs';
 const DB=openLocalDb();
 const routes = new Map([['/', 'index.html'], ['/index.html', 'index.html'], ['/styles.css', 'styles.css'], ['/app.js', 'app.js'], ['/diagnostic.mjs', 'diagnostic.mjs'], ['/sketch.html', 'sketch.html']]);
-for(const name of ['success-plan','action-inbox','reproduction-packet','outcome-review','reviewed-qbr','evidence','qbr-pdf','operations','record-links'])routes.set('/features/'+name+'.mjs','features/'+name+'.mjs');
+for(const name of ['success-plan','action-inbox','reproduction-packet','outcome-review','reviewed-qbr','evidence','qbr-pdf','operations','record-links','intervention-case','intervention-workspace','hypothesis','deployment-readiness'])routes.set('/features/'+name+'.mjs','features/'+name+'.mjs');
 for(const name of ['evidence-data.mjs','shared-workspace.mjs'])routes.set('/'+name,name);
 const types = { html: 'text/html', css: 'text/css', js: 'text/javascript', mjs: 'text/javascript' };
 http.createServer(async (req, res) => {

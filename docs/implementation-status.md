@@ -32,3 +32,15 @@ Interventions and product feedback accept labelled HTTPS references to PRs, conv
 Owner notification previews use hypothetical #account-example-actions routing. Recording a demo notification persists a simulated-not-sent record in the workspace. This is not Slack delivery, identity verification or automatic owner-change notification.
 
 Diagnostic runs are three deterministic processing stages, separate from the five human workflow screens. Connections & execution contains live sync and explicitly reviewed MCP actions.
+
+## Integrated intervention workflow
+
+Open **Account summary → Open synthetic intervention example** to add a complete, explicitly fictional Payments pilot. Existing records are preserved. The example follows a linked objective, testable explanation, readiness checks, delivered work, dated manual measurements and a customer decision to revise the pilot after missing its target. The scenario includes future illustrative dates; it is not an observed customer outcome.
+
+Deployment plans, Customer outcomes and Action inbox open one canonical intervention with Overview, Work, Evidence and Review tabs. Hypothesis plans capture alternative explanations and criteria that could weaken the proposed explanation. Accepting a test does not establish a cause.
+
+Readiness covers repository access, environment, permitted workflow, champion and review capacity. Expansion requires all checks ready with evidence, the agreed result target and quality guardrail, and current evidence. Older records remain editable but must complete readiness before expansion.
+
+Workflow observations distinguish human-led IDE assistance from delegated-agent tasks. Counts, dates, evidence and optional cost are recorded separately from the agreed intervention metric; no productivity or financial gains are inferred.
+
+Customer decisions record person, date, source and rationale, plus server-side writer attribution. Changed intervention evidence makes a decision stale. QBRs include the current decision label/date, explicitly marking example decisions and excluding private rationale. All four features work without live credentials; external integrations remain subject to the limitations above.
