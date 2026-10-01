@@ -1,0 +1,1 @@
+{"version":"1.0","acceptanceWeight":0.7,"activeWeight":0.3,"healthy":70,"watch":50,"stalledBelow":55,"improvement":2,"decline":-10,"highActive":70,"minSuggested":100,"minWorkingDays":10,"minCompleteness":0.9,"minAccountCoverage":0.8}

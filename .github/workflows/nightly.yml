@@ -1,0 +1,29 @@
+name: Nightly account review
+on:
+  schedule:
+    - cron: '0 18 * * *'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: nightly-account-review
+  cancel-in-progress: false
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: npm ci
+      - run: npm run data:build
+      - run: node scripts/nightly.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: account-review
+          path: output/nightly/report.json
+          retention-days: 14

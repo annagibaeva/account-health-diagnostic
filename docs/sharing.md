@@ -2,9 +2,11 @@
 
 ## Local quick start
 
-Use Node.js 22 or newer and Python 3.12 or newer. The offline demo has no third-party runtime dependencies to install.
+Use Node.js 22 or newer and Python 3.12 or newer. Install the locked tooling with `npm ci`; the offline generator uses the Python standard library.
 
 ```sh
+npm ci
+npm run data:build
 npm start
 ```
 
@@ -40,9 +42,9 @@ Store generated archives outside the repository or in the ignored `dist/` direct
 
 ## Website publishing boundary
 
-Publishing this repository shares the source; it does not deploy a website. The current server binds to localhost and the API permits local origins only. It has no authenticated shared-account access. A static host cannot run its Python workers or SQLite history.
+Publishing this repository shares the source; it does not deploy a website. The local server binds to localhost. The portable hosted Worker uses authenticated APIs and D1 persistence. A static-only host cannot run the shared APIs.
 
-A hosted interactive version needs a deliberate deployment configuration, authenticated account access, persistent storage, and configured origins. For now, reviewers can run the complete offline demo locally. No live credentials or real customer records are needed.
+The hosting build is `npm run build` with Sites metadata in `.openai/hosting.json`. Deployment starts private. Reviewers can also run the complete offline demo locally. No live credentials or real customer records are needed.
 
 ## Reuse
 

@@ -5,10 +5,19 @@
   "type": "module",
   "scripts": {
     "start": "node prototype/server.mjs",
-    "test": "node --test prototype/diagnostic.test.mjs prototype/connections.test.mjs prototype/features/action-inbox.test.mjs prototype/features/reproduction-packet.test.mjs prototype/features/review.test.mjs"
+    "test": "node scripts/test-all.mjs",
+    "data:build": "node scripts/python.mjs -m data.pipeline --publish",
+    "test:python": "node scripts/python.mjs -m unittest discover -s agents -p test_*.py",
+    "test:data": "node scripts/python.mjs -m unittest discover -s data -p test_*.py",
+    "build": "node scripts/build-site.mjs"
   },
   "description": "Explainable account-health and customer-success workflow using synthetic telemetry",
   "engines": {
     "node": ">=22"
+  },
+  "devDependencies": {
+    "drizzle-kit": "^0.31.11",
+    "drizzle-orm": "^0.45.3",
+    "esbuild": "^0.28.2"
   }
 }

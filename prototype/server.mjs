@@ -1,20 +1,19 @@
 import http from 'node:http';
 import { readFile } from 'node:fs/promises';
 import {testCursor,testMcp} from './connections.mjs';
-import {agentCall} from './agent-bridge.mjs';
-import {teams} from './diagnostic.mjs';
+import {api} from '../hosting/worker.mjs';
+import {openLocalDb} from '../hosting/local-db.mjs';
+const DB=openLocalDb();
 const routes = new Map([['/', 'index.html'], ['/index.html', 'index.html'], ['/styles.css', 'styles.css'], ['/app.js', 'app.js'], ['/diagnostic.mjs', 'diagnostic.mjs'], ['/sketch.html', 'sketch.html']]);
-for(const name of ['success-plan','action-inbox','reproduction-packet','outcome-review','reviewed-qbr'])routes.set('/features/'+name+'.mjs','features/'+name+'.mjs');
+for(const name of ['success-plan','action-inbox','reproduction-packet','outcome-review','reviewed-qbr','evidence','qbr-pdf','operations'])routes.set('/features/'+name+'.mjs','features/'+name+'.mjs');
+for(const name of ['evidence-data.mjs','shared-workspace.mjs'])routes.set('/'+name,name);
 const types = { html: 'text/html', css: 'text/css', js: 'text/javascript', mjs: 'text/javascript' };
 http.createServer(async (req, res) => {
-  if(req.url==='/api/agents/run'||req.url==='/api/agents/history'){
-    if(req.method!=='POST'||!['http://127.0.0.1:4173','http://localhost:4173'].includes(req.headers.origin)||!['127.0.0.1:4173','localhost:4173'].includes(req.headers.host)){res.writeHead(403);return res.end('Forbidden')}
-    res.setHeader('Content-Type','application/json');res.setHeader('Cache-Control','no-store');
-    try{let input='';for await(const chunk of req){input+=chunk;if(input.length>200000){res.writeHead(413);return res.end(JSON.stringify({error:'Snapshot too large'}))}}
-      const body=input?JSON.parse(input):{};
-      const snapshot={account:'straits-meridian',source:'synthetic',window_end:'2026-09-28',teams,workspace:body.workspace??{}};
-      const result=await agentCall(req.url.endsWith('/run')?'run':'history',snapshot);return res.end(JSON.stringify(result));
-    }catch(e){res.statusCode=500;return res.end(JSON.stringify({error:e.message}))}
+  if(req.url.startsWith('/api/')&&req.url!=='/api/connections/test'){
+    if(!['127.0.0.1:4173','localhost:4173'].includes(req.headers.host)){res.writeHead(403);return res.end('Forbidden')}
+    let body='';for await(const chunk of req){body+=chunk;if(body.length>1500000){res.writeHead(413);return res.end('Request too large')}}
+    const request=new Request('http://'+req.headers.host+req.url,{method:req.method,headers:req.headers,...(!['GET','HEAD'].includes(req.method)?{body}:{})});
+    const response=await api(request,{...process.env,DB},{local:true});res.writeHead(response.status,Object.fromEntries(response.headers));return res.end(await response.text());
   }
   if(req.url==='/api/connections/test'){
     const origin=req.headers.origin;

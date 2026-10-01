@@ -1,0 +1,20 @@
+import {mkdir,readFile,readdir,writeFile} from 'node:fs/promises';
+import {resolve,join} from 'node:path';
+import {build} from 'esbuild';
+const root=process.cwd(),assets={};
+const names=['index.html','styles.css','app.js','diagnostic.mjs','evidence-data.mjs','sketch.html','shared-workspace.mjs'];
+for(const entry of await readdir('prototype/features'))if(entry.endsWith('.mjs')&&!entry.endsWith('.test.mjs'))names.push('features/'+entry);
+for(const name of names){try{assets['/'+name]=await readFile(join('prototype',name),'utf8')}catch(e){if(e.code!=='ENOENT')throw e}}
+assets['/']=assets['/index.html'];
+await mkdir('.sites-runtime',{recursive:true});
+const entry=resolve('.sites-runtime/build-entry.mjs');
+await writeFile(entry,`import worker from '../hosting/worker.mjs';
+const assets=${JSON.stringify(assets)};
+const staticAssets={async fetch(request){const path=new URL(request.url).pathname;if(!Object.hasOwn(assets,path))return new Response('Not found',{status:404});const extension=path.split('.').pop();const type=extension==='css'?'text/css':extension==='js'||extension==='mjs'?'text/javascript':'text/html';return new Response(assets[path],{headers:{'Content-Type':type+'; charset=utf-8','Cache-Control':'no-store','X-Content-Type-Options':'nosniff'}})}};
+export default {fetch(request,env,ctx){return worker.fetch(request,{...env,ASSETS:staticAssets},ctx)}};
+`);
+await mkdir('dist/server',{recursive:true});
+await mkdir('dist/.openai',{recursive:true});
+await build({entryPoints:[entry],outfile:'dist/server/index.js',bundle:true,format:'esm',platform:'browser',target:'es2022',minify:false});
+await writeFile('dist/.openai/hosting.json',await readFile('.openai/hosting.json'));
+console.log('Built hosted worker with '+Object.keys(assets).length+' browser assets.');

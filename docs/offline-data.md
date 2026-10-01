@@ -1,0 +1,15 @@
+# Offline evidence foundation
+
+Run `python -m data.pipeline --publish` from the repository root. This deterministically creates 400 fictional members, six cohort filters, 90 daily observations per cohort (2026-07-01 to 2026-09-28), and paginated commit fixtures. Seed defaults to 42. Generated raw fixtures and SQLite are ignored by Git; compact evidence and its browser module are committed. `python -m unittest data.test_pipeline` verifies reconciliation and failure cases.
+
+The implemented response subset is members, agent edits, daily active users and commit metrics. Technical schema provenance was checked on 2026-09-30 against the provider's [Admin](https://cursor.com/docs/account/teams/admin-api), [Analytics](https://cursor.com/docs/account/teams/analytics-api) and [AI Code Tracking](https://cursor.com/docs/account/teams/ai-code-tracking-api) documentation. Endpoint names remain technical identifiers; customer-facing naming is neutral. This does not claim every endpoint is implemented. Cohorts are user filters under one provider team; their membership mapping and requested filters live in the ingestion manifest, outside response bodies.
+
+Daily activity is cohort-level as documented by the chosen endpoints; individual daily histories are not fabricated from aggregate responses. The roster supplies explicit denominators. A deterministic schedule apportions active-user counts without exceeding cohort size. Generated counts are fictional and do not estimate real behavior.
+
+Normalization rejects conflicting duplicates, removes exact duplicates and quarantines invalid observations. Missing or invalid daily rows reduce completeness, rather than becoming zero usage. SQL calculates ratios of sums for current and previous adjacent 28-day windows. Acceptance requires 100 suggested diffs, 10 working days and 90% daily completeness. Attribution with no tracked lines stays unavailable. No repository-wide coverage is claimed. Monday-Friday calendar excludes no public holidays.
+
+SQLite replaces the draft DuckDB choice to keep the offline build dependency-free and reproducible on Windows and CI. The aggregation query is in `data/metrics.sql`. SQLite stores normalized daily and commit records. This is separate from shared application persistence.
+
+`data/evidence.json` is the server interface; `prototype/evidence-data.mjs` is its generated browser equivalent. Records have stable IDs, dataset content hashes, metric, team, period, window, numerator, denominator, availability and source selectors. Source selectors identify reproducible fixture files and SQL filters, not external hyperlinks. `data/rules.json` owns versioned thresholds used by Python and the generated JS module; rule evaluators are checked for parity. The browser retains scenarios for demonstrating evidence failures.
+
+Regenerate with `--publish` after changing rules or generator inputs. The published compact artifact is verified against a fresh generation by tests. The command does not contact a live API, schedule a run, or write externally.

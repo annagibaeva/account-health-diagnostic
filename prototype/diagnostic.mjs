@@ -1,11 +1,5 @@
-export const teams = [
-  {name:'Digital Channels',size:90,a:78,p:73,u:84,c:43},
-  {name:'Payments',size:80,a:48,p:64,u:82,c:32},
-  {name:'Core Banking',size:85,a:35,p:34,u:36,c:14},
-  {name:'Risk & Compliance',size:55,a:52,p:46,u:44,c:18},
-  {name:'Data Platform',size:50,a:70,p:60,u:72,c:39},
-  {name:'Developer Platform',size:40,a:76,p:74,u:88,c:null}
-];
+import { evidence, rules } from './evidence-data.mjs';
+export const teams = evidence.teams;
 export const actions = [
   'Repair missing Analytics responses before interpreting adoption.',
   'Validate code attribution against an independently defined repository sample.',
@@ -29,19 +23,19 @@ export const branches = [
   'Otherwise → investigate barriers'
 ];
 export function diagnose(t, scenario='normal') {
-  const valid=scenario!=='current', comparable=valid&&scenario!=='prior';
+  const valid=scenario!=='current'&&t.valid!==false&&Number.isFinite(t.a)&&Number.isFinite(t.u), comparable=valid&&scenario!=='prior'&&t.comparable!==false&&Number.isFinite(t.p);
   const contribution=scenario==='tracking'?null:t.c;
-  const score=valid?.7*t.a+.3*t.u:null;
+  const score=valid?rules.acceptanceWeight*t.a+rules.activeWeight*t.u:null;
   const delta=comparable?t.a-t.p:null;
-  const stalled=comparable?t.a<55&&delta<=2:null;
-  const declining=comparable?delta<=-10:null;
-  const action=!valid?0:contribution===null?1:!comparable?2:stalled?(t.u>=70?3:4):declining?5:delta>2?6:score>=70?7:8;
-  return {valid,comparable,contribution,score,delta,stalled,declining,action,status:!valid?'Insufficient evidence':score>=70?'Healthy adoption':score>=50?'Watch':'Needs attention'};
+  const stalled=comparable?t.a<rules.stalledBelow&&delta<=rules.improvement:null;
+  const declining=comparable?delta<=rules.decline:null;
+  const action=!valid?0:contribution===null?1:!comparable?2:stalled?(t.u>=rules.highActive?3:4):declining?5:delta>rules.improvement?6:score>=rules.healthy?7:8;
+  return {valid,comparable,contribution,score,delta,stalled,declining,action,status:!valid?'Insufficient evidence':score>=rules.healthy?'Healthy adoption':score>=rules.watch?'Watch':'Needs attention'};
 }
 export function account(selected, scenario) {
   let sum=0,headcount=0;
   teams.forEach((t,i)=>{const d=diagnose(t,i===selected?scenario:'normal');if(d.score!==null){sum+=d.score*t.size;headcount+=t.size}});
-  return {headcount,score:headcount>=320?sum/headcount:null};
+  return {headcount,score:headcount>=400*rules.minAccountCoverage?sum/headcount:null};
 }
 
 // Internal-workspace records are fictional, separate from API telemetry fixtures.

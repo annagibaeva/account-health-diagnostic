@@ -26,6 +26,7 @@ export function deriveInbox(workspace = {}, today = localToday()) {
     // Completed execution can still need outcome evidence. Never infer zero from missing data.
     if (d.status !== 'Cancelled') {
       if (!Number.isFinite(d.actual) || !d.observed || !String(d.evidence ?? '').trim()) reasons.push('Outcome evidence pending — record a measurement, observation date and evidence.');
+      if (Array.isArray(d.recommendationEvidence)&&!d.recommendationEvidence.length) reasons.push('Diagnostic evidence link missing — link the recommendation to measurable records.');
       if (d.quality === 'Failed') { reasons.push('Quality guardrail failed — review before expanding.'); priority = 0; }
       else if (d.quality !== 'Passed') reasons.push('Quality review pending — assess the agreed guardrail.');
     }

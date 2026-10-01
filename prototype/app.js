@@ -1,3 +1,7 @@
+import {mountOperations} from './features/operations.mjs';
+import {sharedWorkspaceClient} from './shared-workspace.mjs';
+import {evidence as evidenceCatalog} from './evidence-data.mjs';
+import {evidenceLabel,validEvidence,linkMeasurement,reconcileEvidence,recommendationEvidence,measurementKind} from './features/evidence.mjs';
 import { teams, actions, branches, diagnose, account, initialWorkspace, outcome, successMetrics } from './diagnostic.mjs';
 import {mountSuccessPlan} from './features/success-plan.mjs';
 import {mountActionInbox} from './features/action-inbox.mjs';
@@ -8,7 +12,7 @@ const $=id=>document.getElementById(id);
 const key='signal-prototype-v1';
 let selected=1,page='overview',scenario='normal',theme='dark',edits={};
 try {const saved=JSON.parse(localStorage.getItem(key));if(saved){if(saved.theme==='light')theme='light';if(saved.edits&&typeof saved.edits==='object')for(const [k,v] of Object.entries(saved.edits))if(/^[0-5]$/.test(k)&&typeof v==='string')edits[k]=v.slice(0,500)}}catch{}
-function persist(){try{localStorage.setItem(key,JSON.stringify({theme,edits}));$('save-status').textContent='Saved on this browser'}catch{$('save-status').textContent='Browser storage unavailable; edits last for this session'}}
+function persist(){try{localStorage.setItem(key,JSON.stringify({theme}))}catch{}if(workspace&&sharedClient){workspace.actionOverrides={...edits};saveInternal();$('save-status').textContent='Action submitted to shared workspace'}}
 function actionFor(i){return edits[i]??(i===3?'Review permitted workflows with the team lead before considering expansion.':actions[diagnose(teams[i]).action])}
 function node(tag,text,cls){const n=document.createElement(tag);n.textContent=text;if(cls)n.className=cls;return n}
 function navigate(p){page=p==='report'?'qbr':p;render();document.querySelector('main').scrollIntoView({block:'start'})}
@@ -16,10 +20,12 @@ function render(){
   document.documentElement.style.colorScheme=theme;$('theme').textContent='Switch to '+(theme==='dark'?'light':'dark');
   document.querySelectorAll('[data-screen]').forEach(n=>n.hidden=n.dataset.screen!==page);document.querySelectorAll('[data-page]').forEach(n=>n.setAttribute('aria-pressed',String(n.dataset.page===page)));
   $('teams').replaceChildren();teams.forEach((t,i)=>{const d=diagnose(t),b=node('button','','team');b.setAttribute('aria-pressed',String(i===selected));const label=node('span',t.name);label.append(node('small',`${t.size} engineers · ${d.stalled?'Stalled':d.contribution===null?'Tracking gap':d.status}`));b.append(label,node('span',Math.round(d.score),'grade'));b.onclick=()=>{selected=i;render()};$('teams').append(b)});
-  const t=teams[selected],base=diagnose(t);$('team-name').textContent=t.name;$('team-status').textContent=base.stalled?'STALLED':base.contribution===null?'TRACKING GAP':base.status.toUpperCase();$('accept').textContent=t.a+'%';$('contribution').textContent=t.c===null?'Unavailable':t.c+'%';$('prior').textContent=t.p+'%';$('current').textContent=t.a+'%';$('prior-bar').style.width=t.p+'%';$('current-bar').style.width=t.a+'%';$('intervention').value=actionFor(selected);$('owner').textContent='Owner · '+t.name+' lead';$('save-status').textContent=Object.hasOwn(edits,selected)?'Custom action · saved locally':'Suggested action · editable';
+  const t=teams[selected],base=diagnose(t);$('team-name').textContent=t.name;$('team-status').textContent=base.stalled?'STALLED':base.contribution===null?'TRACKING GAP':base.status.toUpperCase();$('accept').textContent=t.a+'%';$('contribution').textContent=t.c===null?'Unavailable':t.c+'%';$('prior').textContent=t.p+'%';$('current').textContent=t.a+'%';$('prior-bar').style.width=t.p+'%';$('current-bar').style.width=t.a+'%';$('intervention').value=actionFor(selected);$('owner').textContent='Owner · '+t.name+' lead';$('save-status').textContent=Object.hasOwn(edits,selected)?'Custom action · shared workspace':'Suggested action · editable';
   $('team-select').value=selected;$('scenario').value=scenario;const d=diagnose(t,scenario),a=account(selected,scenario);
+  const measured=(metric,period='current')=>evidenceCatalog.records.find(r=>r.team===t.name&&r.metric===metric&&r.period===period);
+  const acceptance=measured('agent_acceptance'),activity=measured('active_share'),attribution=measured('ai_commit_share'),previous=measured('agent_acceptance','prior');
   const steps=[
-    ['D1 / Current evidence gate',d.valid?'PASS · 1,000 suggested diffs; 20 working days; 100% response completeness.':'FAIL · 80% completeness is below the 90% minimum. Withhold score and trends.'],
+    ['D1 / Current evidence gate',d.valid?`PASS · ${acceptance.denominator} suggested diffs; ${activity.denominator/t.size} working days; ${acceptance.completeness*100}% response completeness.`:'FAIL · Current evidence unavailable or demonstration scenario selected. Withhold score and trends.'],
     ['D2 / Adoption health',d.score===null?'Score withheld. Missing responses are not zero activity.':`0.70 × ${t.a}% + 0.30 × ${t.u}% = ${d.score.toFixed(1)} → ${d.status}.`],
     ['D3–D5 / Baseline and independent flags',d.comparable?`Change ${d.delta>0?'+':''}${d.delta} points. Stalled: ${d.stalled?'yes':'no'}; declining: ${d.declining?'yes':'no'}.`:'Comparable windows unavailable → stalled and declining flags unknown.'],
     ['D6 / Contribution check',d.contribution===null?'Unavailable → repair tracking. A valid adoption score remains visible.':`${d.contribution}% of tracked added lines. Coverage of all repositories is unknown; no score weight.`],
@@ -27,23 +33,52 @@ function render(){
     ['D8 / CTO narrative', 'Traceable numbers → claim validation → human review → export. Failed validation uses a deterministic fallback. Narrative validation is planned, not implemented here.']
   ];$('trace').replaceChildren();steps.forEach(([title,text])=>{const n=node('div',title,'step');n.append(node('small',text));$('trace').append(n)});
   $('branches').replaceChildren();branches.forEach((text,i)=>{const li=node('li',text,i===d.action?'taken':'');if(i===d.action)li.append(node('span','TAKEN','branch-tag'));$('branches').append(li)});$('outcome').textContent=actions[d.action]+(selected===3?' Human context: clarify permitted workflows first.':'');
-  $('inputs').textContent=`Synthetic aggregates, not raw API responses\nCurrent: 1–28 Sep; previous: 4–31 Aug 2026\nAccepted / suggested diffs: ${t.a*10} / 1,000\nActive-user-days: ${t.u*t.size/5} / ${t.size*20}\nEligible working days: 20\nAnalytics response completeness: ${d.valid?100:80}%\nPrior sample: ${scenario==='prior'?50:1000} suggested diffs\nAI / total tracked added lines: ${d.contribution===null?'unavailable':d.contribution*100+' / 10,000'}\nRule gates: ≥100 diffs; ≥10 days; ≥90% responses.\nStalled: acceptance <55% and change ≤+2 points.\nDeclining: change ≤−10 points.`;
+  $('inputs').textContent=`SQL over reproducible synthetic API-shaped responses\nDataset: ${evidenceCatalog.datasetVersion}\nCurrent: ${acceptance.window.start} to ${acceptance.window.end}\nPrevious: ${previous.window.start} to ${previous.window.end}\nAccepted / suggested diffs: ${acceptance.numerator} / ${acceptance.denominator}\nActive-user-days: ${activity.numerator} / ${activity.denominator}\nEligible working days: ${activity.denominator/t.size}\nAnalytics completeness: ${acceptance.completeness*100}%\nPrior sample: ${previous.denominator} suggested diffs\nAI / total tracked added lines: ${attribution.value===null?'unavailable':attribution.numerator+' / '+attribution.denominator}\nEvidence: ${acceptance.id}\nScenario override: ${scenario}\nRule gates: ≥100 diffs; ≥10 days; ≥90% responses.\nStalled: acceptance <55% and change ≤+2 points.\nDeclining: change ≤−10 points.`;
   $('report-actions').replaceChildren();teams.forEach((t,i)=>$('report-actions').append(node('li',`${t.name} lead — ${actionFor(i)}`)));
   renderInternal();
   renderWorkflowFeatures();
 }
 teams.forEach((t,i)=>{const o=node('option',t.name);o.value=i;$('team-select').append(o)});
 initializeInternal();
+var sharedClient=sharedWorkspaceClient({status:message=>{
+  internalMessage=message;
+  if($('internal-save'))$('internal-save').textContent=message;
+  if($('shared-persistence-message'))$('shared-persistence-message').textContent=message;
+}});
+try {
+  workspace=await sharedClient.load();
+  for(const d of workspace.deployments){d.recommendationEvidence??=recommendationEvidence(d,evidenceCatalog);d.measurementKind??=measurementKind(d)}
+  edits=workspace.actionOverrides??{};
+} catch(error) {
+  internalMessage=error.message;
+  edits={};
+}
+const sharedNotice=node('div','','internal-banner');
+sharedNotice.id='shared-persistence-status';
+const sharedMessage=node('p',internalMessage);sharedMessage.id='shared-persistence-message';sharedMessage.setAttribute('role','status');sharedNotice.append(sharedMessage);
+document.querySelector('main').prepend(sharedNotice);
+try {
+  const legacy=localStorage.getItem('signal-internal-mvp');
+  if(legacy){
+    sharedNotice.append(node('p','Previous browser records are preserved separately. Download and review them before entering any changes in the shared workspace.'));
+    sharedNotice.append(button('Download previous browser records',()=>{
+      const url=URL.createObjectURL(new Blob([legacy],{type:'application/json'}));
+      const link=document.createElement('a');link.href=url;link.download='previous-browser-records.json';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
+    }));
+  }
+}catch{}
 initializeConnectors();
 initializeAgents();
 initializeWorkflowFeatures();
 document.querySelectorAll('[data-page]').forEach(b=>b.onclick=()=>navigate(b.dataset.page));$('prepare').onclick=()=>navigate('report');$('why').onclick=()=>{scenario='normal';navigate('reasoning')};$('team-select').onchange=e=>{selected=Number(e.target.value);render()};$('scenario').onchange=e=>{scenario=e.target.value;render()};$('intervention').oninput=e=>{edits[selected]=e.target.value;persist()};$('theme').onclick=()=>{theme=theme==='dark'?'light':'dark';persist();render()};$('print').onclick=()=>window.print();$('download').onclick=()=>{const blob=new Blob([$('report').innerText],{type:'text/plain;charset=utf-8'});const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='customer-qbr-draft.txt';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)};render();
 
-var workspace, editingDeployment, editingFeedback, internalMessage;
+var workspace, editingDeployment, editingFeedback, internalMessage, editingEvidence;
 function initializeInternal(){
-  workspace=initialWorkspace();editingDeployment=null;editingFeedback=null;internalMessage='Fictional internal records · saved in this browser only';
-  try{const saved=JSON.parse(localStorage.getItem('signal-internal-mvp'));if(saved?.version===1&&Array.isArray(saved.deployments)&&Array.isArray(saved.feedback)&&saved.deployments.every(validDeployment)&&saved.feedback.every(validFeedback))workspace=saved;}catch{}
+  workspace=initialWorkspace();editingDeployment=null;editingFeedback=null;internalMessage='Loading shared workspace…';
+  // Legacy browser records remain available as an explicit migration backup.
+
   for(const d of workspace.deployments){if(d.source==='Cursor Analytics + peer-review sample (simulated)')d.source='Usage analytics + peer-review sample (simulated)';}
+  for(const d of workspace.deployments){d.recommendationEvidence??=recommendationEvidence(d,evidenceCatalog);d.measurementKind??=measurementKind(d)}
   const nav=document.querySelector('nav');
   [['deployments','Deployment plans'],['success','Customer success'],['feedback','Product feedback']].forEach(([id,label])=>{const b=node('button',label,'navbutton');b.dataset.page=id;nav.append(b)});
   document.querySelector('main').insertAdjacentHTML('beforeend',`
@@ -55,18 +90,19 @@ function initializeInternal(){
   $('new-feedback').onclick=()=>openFeedback();$('cancel-feedback').onclick=()=>{$('feedback-editor').hidden=true;editingFeedback=null};$('feedback-form').onsubmit=saveFeedback;$('feedback-filter').onchange=renderInternal;
   $('export-internal').onclick=()=>{const blob=new Blob([JSON.stringify({...workspace,notice:'Fictional internal records; not for customer distribution'},null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='signal-internal-records.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)};
 }
-function saveInternal(){try{localStorage.setItem('signal-internal-mvp',JSON.stringify(workspace));internalMessage='Saved locally · no external system updated'}catch{internalMessage='Storage unavailable · edits retained for this session only'}renderInternal();renderWorkflowFeatures()}
+function saveInternal(){sharedClient.save(workspace);renderInternal();renderWorkflowFeatures()}
+
 function validDeployment(d){return d&&['id','title','team','objective','owner','partner','status','due','metric','unit','direction','guardrail','quality','source','observed','evidence','hypothesis','action'].every(k=>typeof d[k]==='string')&&Number.isFinite(d.baseline)&&Number.isFinite(d.target)&&(d.actual===null||Number.isFinite(d.actual))}
 function validFeedback(f){return f&&['id','title','team','workflow','impact','evidence','severity','status','owner','deployment'].every(k=>typeof f[k]==='string')}
 var workflowFeatures;
 function initializeWorkflowFeatures(){
-  const ctx={getWorkspace:()=>workspace,saveWorkspace:saveInternal,navigate,openDeployment,openFeedback,node,field,button,outcome};
-  workflowFeatures=[mountSuccessPlan(ctx),mountActionInbox(ctx),mountReproductionPacket(ctx),mountOutcomeReview(ctx),mountReviewedQbr(ctx)];
+  const ctx={getWorkspace:()=>workspace,saveWorkspace:saveInternal,navigate,openDeployment,openFeedback,node,field,button,outcome,getEvidence:()=>evidenceCatalog};
+  workflowFeatures=[mountSuccessPlan(ctx),mountActionInbox(ctx),mountReproductionPacket(ctx),mountOutcomeReview(ctx),mountReviewedQbr(ctx),mountOperations(ctx)];
   const nav=document.querySelector('nav');nav.querySelector('.navlabel').textContent='Account workflow';
   const legacy=nav.querySelector('[data-page="report"]');legacy.hidden=true;
   for(const id of ['plan','inbox','packets','outcomes','qbr']){const b=nav.querySelector(`[data-page="${id}"]`);if(b)nav.append(b)}
   nav.append(node('div','Analysis & operations','eyebrow navlabel'));
-  for(const id of ['overview','reasoning','deployments','success','feedback','agents']){const b=nav.querySelector(`[data-page="${id}"]`);if(b)nav.append(b)}
+  for(const id of ['overview','reasoning','deployments','success','feedback','agents','operations']){const b=nav.querySelector(`[data-page="${id}"]`);if(b)nav.append(b)}
 }
 function renderWorkflowFeatures(){for(const feature of workflowFeatures??[])feature.render()}
 function button(text,fn){const b=node('button',text,'action');b.type='button';b.onclick=fn;return b}
@@ -78,7 +114,7 @@ function renderInternal(){
   summary($('success-summary'),[[m.assessable?Math.round(m.met/m.assessable*100)+'%':'—',`Targets met · ${m.met}/${m.assessable} assessable`],[m.total?Math.round(m.complete/m.total*100)+'%':'—',`Execution complete · ${m.complete}/${m.total}`],[m.pending,'Awaiting outcome evidence']]);
   $('deployment-list').replaceChildren();$('objective-list').replaceChildren();
   workspace.deployments.forEach(d=>{
-    const r=node('article','','record');r.append(node('div',d.id+' / '+d.team,'eyebrow'),node('h2',d.title),node('span',d.status,'badge'),node('p',d.objective,'muted'),labelValue('Next action',d.action),labelValue('Owner',d.owner),labelValue('Customer partner',d.partner),labelValue('Due',d.due),labelValue('Result',outcome(d)));const controls=node('div','','form-buttons');controls.append(button('Edit / record outcome',()=>openDeployment(d.id)),button('Capture linked feedback',()=>{navigate('feedback');openFeedback(null,d.id)}));r.append(controls);$('deployment-list').append(r);
+    const r=node('article','','record');r.append(node('div',d.id+' / '+d.team,'eyebrow'),node('h2',d.title),node('span',d.status,'badge'),node('p',d.objective,'muted'),labelValue('Next action',d.action),labelValue('Owner',d.owner),labelValue('Customer partner',d.partner),labelValue('Due',d.due),labelValue('Result',outcome(d)),labelValue('Diagnostic evidence',(d.recommendationEvidence??[]).map(evidenceLabel).join(' | ')||'No linked telemetry'),labelValue('Measurement type',measurementKind(d)));const controls=node('div','','form-buttons');controls.append(button('Edit / record outcome',()=>openDeployment(d.id)),button('Capture linked feedback',()=>{navigate('feedback');openFeedback(null,d.id)}));r.append(controls);$('deployment-list').append(r);
     const o=node('article','','record');o.append(node('div',d.id+' / '+d.team,'eyebrow'),node('h2',d.objective),labelValue(d.metric,`${d.baseline} → ${d.actual===null?'not measured':d.actual} · target ${d.target} ${d.unit} (${d.direction})`),labelValue('Assessment',outcome(d)),labelValue('Guardrail',d.guardrail+' · '+d.quality),labelValue('Measurement source',d.source),labelValue('Observed',d.observed||'Not recorded'),labelValue('Evidence',d.evidence||'Not recorded'),button('Update result',()=>{navigate('deployments');openDeployment(d.id)}));$('objective-list').append(o);
   });
   $('feedback-list').replaceChildren();const filter=$('feedback-filter').value;const records=workspace.feedback.filter(f=>filter==='All'||f.status===filter);if(!records.length)$('feedback-list').append(node('p','No feedback matches this status.','muted'));records.forEach(f=>{const r=node('article','','record');r.append(node('div',f.id+' / '+f.team,'eyebrow'),node('h2',f.title),node('span',f.severity+' · '+f.status,'badge'),labelValue('Workflow',f.workflow),labelValue('Impact',f.impact),labelValue('Evidence',f.evidence),labelValue('Owner',f.owner),labelValue('Intervention',f.deployment||'Not linked'),button('Triage / update',()=>openFeedback(f.id)));$('feedback-list').append(r)});
@@ -88,9 +124,9 @@ function field(container,prefix,key,label,value,{options,type='text',optional=fa
 }
 function openDeployment(id){
   editingDeployment=id??null;const d=workspace.deployments.find(d=>d.id===id)??{title:'',team:teams[selected].name,objective:'',owner:'',partner:'',status:'Planned',due:'2026-10-30',metric:'',unit:'%',direction:'increase',baseline:0,target:0,actual:null,guardrail:'',quality:'Not assessed',source:'',observed:'',evidence:'',hypothesis:'',action:''};$('deployment-editor-title').textContent=id?'Edit intervention / '+id:'New measurable intervention';const c=$('deployment-fields');c.replaceChildren();
-  const config=[['title','Title'],['team','Team',{options:teams.map(t=>t.name)}],['objective','Customer objective'],['owner','Internal owner'],['partner','Customer counterpart'],['status','Execution status',{options:['Planned','In progress','Blocked','Complete']}],['due','Review date',{type:'date'}],['hypothesis','Hypothesis',{type:'textarea'}],['action','Action',{type:'textarea'}],['metric','Success metric'],['unit','Unit',{options:['%','tasks','days','hours','count']}],['direction','Target direction',{options:['increase','decrease']}],['baseline','Baseline',{type:'number'}],['target','Target',{type:'number'}],['actual','Observed value (optional)',{type:'number',optional:true}],['observed','Observation date (required with observed value)',{type:'date',optional:true}],['guardrail','Quality guardrail'],['quality','Quality assessment',{options:['Not assessed','Passed','Failed']}],['source','Measurement source'],['evidence','Evidence / measurement method',{type:'textarea'}]];config.forEach(([k,l,opts])=>field(c,'dep-',k,l,d[k],opts));$('deployment-editor').hidden=false;$('deployment-editor').scrollIntoView({block:'start'});
+  const config=[['title','Title'],['team','Team',{options:teams.map(t=>t.name)}],['objective','Customer objective'],['owner','Internal owner'],['partner','Customer counterpart'],['status','Execution status',{options:['Planned','In progress','Blocked','Complete']}],['due','Review date',{type:'date'}],['hypothesis','Hypothesis',{type:'textarea'}],['action','Action',{type:'textarea'}],['metric','Success metric'],['unit','Unit',{options:['%','tasks','days','hours','count']}],['direction','Target direction',{options:['increase','decrease']}],['baseline','Baseline',{type:'number'}],['target','Target',{type:'number'}],['actual','Observed value (optional)',{type:'number',optional:true}],['observed','Observation date (required with observed value)',{type:'date',optional:true}],['guardrail','Quality guardrail'],['quality','Quality assessment',{options:['Not assessed','Passed','Failed']}],['source','Measurement source'],['evidence','Evidence / measurement method',{type:'textarea'}]];config.forEach(([k,l,opts])=>field(c,'dep-',k,l,d[k],opts));editingEvidence={baselineEvidence:d.baselineEvidence,outcomeEvidence:d.outcomeEvidence,recommendationEvidence:d.recommendationEvidence??recommendationEvidence(d,evidenceCatalog)};mountEvidencePicker(c);$('deployment-editor').hidden=false;$('deployment-editor').scrollIntoView({block:'start'});
 }
-function saveDeployment(e){e.preventDefault();const data=Object.fromEntries(new FormData(e.target));for(const k of ['baseline','target','actual'])data[k]=data[k]===''?null:Number(data[k]);const obs=$('dep-observed');obs.setCustomValidity(data.actual!==null&&!data.observed?'Record the observation date.':'');if(!obs.reportValidity())return;for(const k of ['baseline','target','actual']){const input=$('dep-'+k);input.setCustomValidity(data.unit==='%'&&data[k]!==null&&data[k]>100?'Percentages must be between 0 and 100.':'');if(!input.reportValidity())return}data.id=editingDeployment??'DEP-'+crypto.randomUUID().slice(0,8);const index=workspace.deployments.findIndex(d=>d.id===data.id);if(index<0)workspace.deployments.push(data);else workspace.deployments[index]=data;$('deployment-editor').hidden=true;editingDeployment=null;saveInternal()}
+function saveDeployment(e){e.preventDefault();let data=Object.fromEntries(new FormData(e.target));for(const k of ['baseline','target','actual'])data[k]=data[k]===''?null:Number(data[k]);const obs=$('dep-observed');obs.setCustomValidity(data.actual!==null&&!data.observed?'Record the observation date.':'');if(!obs.reportValidity())return;for(const k of ['baseline','target','actual']){const input=$('dep-'+k);input.setCustomValidity(data.unit==='%'&&data[k]!==null&&data[k]>100?'Percentages must be between 0 and 100.':'');if(!input.reportValidity())return}data={...data,...editingEvidence};data=reconcileEvidence(data);data.recommendationEvidence=recommendationEvidence(data,evidenceCatalog);data.id=editingDeployment??'DEP-'+crypto.randomUUID().slice(0,8);const index=workspace.deployments.findIndex(d=>d.id===data.id);if(index<0)workspace.deployments.push(data);else workspace.deployments[index]={...workspace.deployments[index],...data,baselineEvidence:data.baselineEvidence,outcomeEvidence:data.outcomeEvidence};$('deployment-editor').hidden=true;editingDeployment=null;saveInternal()}
 function openFeedback(id,linked){
   editingFeedback=id??null;const f=workspace.feedback.find(f=>f.id===id)??{title:'',team:workspace.deployments.find(d=>d.id===linked)?.team??teams[selected].name,workflow:'',impact:'',evidence:'',severity:'Medium',status:'New',owner:'',deployment:linked??''};$('feedback-editor-title').textContent=id?'Triage feedback / '+id:'Capture product feedback';const c=$('feedback-fields');c.replaceChildren();const config=[['title','Feedback title'],['team','Affected team',{options:teams.map(t=>t.name)}],['workflow','Affected workflow'],['impact','Customer impact',{type:'textarea'}],['evidence','Evidence / reproduction details',{type:'textarea'}],['severity','Severity',{options:['Low','Medium','High']}],['status','Feedback status',{options:['New','Needs reproduction','Triaged','Shared with product','Resolved']}],['owner','Internal owner'],['deployment','Linked intervention',{options:[{label:'No linked intervention',value:''},...workspace.deployments.map(d=>({label:d.id+' · '+d.title,value:d.id}))],optional:true}]];config.forEach(([k,l,opts])=>field(c,'fb-',k,l,f[k],opts));$('feedback-editor').hidden=false;$('feedback-editor').scrollIntoView({block:'start'});
 }
@@ -123,6 +159,7 @@ function initializeAgents(){
       const record={id:'AGENT-'+t.id,title:t.team+' / '+t.rule,team:t.team,objective:t.success_criterion,owner:t.owner,partner:t.team+' lead',status:'Planned',due:'',metric:t.metric,unit:'%',direction:'increase',baseline:t.baseline??0,target:0,actual:null,guardrail:'Agree review-quality criteria with the customer',quality:'Not assessed',source:'Agent run / '+t.evidence_id+' (synthetic)',observed:'',evidence:t.why,hypothesis:'Investigation hypothesis; root cause not established.',action:t.action};
       navigate('deployments');openDeployment();editingDeployment=null;
       for(const [k,v]of Object.entries(record)){const input=$('dep-'+k);if(input)input.value=v??''}
+      $('dep-team').dispatchEvent(new Event('change'));
       // Require the user to choose the target and baseline rather than invent them.
       $('dep-target').value='';if(t.baseline===null)$('dep-baseline').value='';
       editingDeployment=record.id;
@@ -131,4 +168,14 @@ function initializeAgents(){
   }
   $('agent-refresh').onclick=refresh;$('agent-run').onclick=async()=>{const b=$('agent-run');b.disabled=true;$('agent-status').textContent='Running triage, solution planning and internal execution…';try{const result=await request('run',{workspace});$('agent-status').textContent=result.status==='complete'?'Completed. Existing drafts are retained; repeated runs do not duplicate tasks.':'Run failed; no tasks committed.';await refresh()}catch(e){$('agent-status').textContent=e.message}finally{b.disabled=false}};
   refresh();
+}
+
+function mountEvidencePicker(container){
+ const wrap=node('div','','internal-banner');wrap.append(node('h3','Link measurable records'),node('p','Choose a team record to populate a measurement. Existing manual measurements remain manual unless explicitly linked. A historical comparison is not proof of an intervention effect.','small'));
+ const select=node('select','');select.setAttribute('aria-label','Telemetry evidence record');
+ function refresh(){select.replaceChildren();for(const e of evidenceCatalog.records.filter(e=>e.team===$('dep-team').value&&validEvidence(e))){const option=node('option',evidenceLabel(e));option.value=e.id;select.append(option)}}
+ refresh();$('dep-team').addEventListener('change',refresh);wrap.append(select);
+ const status=node('p',[editingEvidence.baselineEvidence,editingEvidence.outcomeEvidence].filter(Boolean).map(evidenceLabel).join(' | ')||'No measurements linked. Current values are manual.','small');
+ for(const kind of ['baseline','outcome'])wrap.append(button('Use as '+kind,()=>{const e=evidenceCatalog.records.find(e=>e.id===select.value);if(!e)return;const d=Object.fromEntries(new FormData($('deployment-form')));const linked=linkMeasurement(d,e,kind);for(const k of ['metric','unit',kind==='baseline'?'baseline':'actual',...(kind==='outcome'?['observed','source','evidence']:[])])$('dep-'+k).value=linked[k];editingEvidence[kind==='baseline'?'baselineEvidence':'outcomeEvidence']=linked[kind==='baseline'?'baselineEvidence':'outcomeEvidence'];status.textContent='Linked '+kind+': '+evidenceLabel(e)}));
+ wrap.append(status);container.append(wrap);
 }

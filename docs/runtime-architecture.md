@@ -1,58 +1,34 @@
-# How the working prototype fits together
+# Current runtime architecture
 
-There are three runtime workers and five account-workflow features. Temporary coding agents used during development are not deployed application services. The number of coding agents does not determine the runtime architecture.
-
-## The three workers
-
-| Worker | Input | Output | Boundary |
-|---|---|---|---|
-| 1. Customer triage | Synthetic team aggregates and submitted account records | Score, stalled teams, blockers, evidence limitations | Deterministic rules; no live ingestion |
-| 2. Decision and solutions | Triage findings | Rule-based interventions, reasons and measurement-repair plans | Targets remain unagreed; recommendations are hypotheses |
-| 3. Internal execution | Recommended plans | Deduplicated local draft tasks | No external messages, code changes or CRM writes |
-
-One Python process runs these workers sequentially. They are not three independently hosted services. Optional model-assisted mode adds three narrative reviewers alongside the workers; it does not add three autonomous execution agents. That mode is unverified against a live model.
+Three deterministic runtime workers support five human-led workflow features. Temporary implementation agents are coding assistants, not deployed services.
 
 ```mermaid
 flowchart TD
-    UI[Browser: account records] -->|Manual Run workflow submits snapshot| Server[Local web server]
-    Fixture[Synthetic team aggregates] --> Server
-    Server --> Bridge[Python process]
-    Bridge --> T[Triage worker]
-    T --> S[Decision and solutions worker]
-    S --> E[Internal execution worker]
-    E --> DB[(SQLite: snapshots, runs and draft tasks)]
-    DB --> Queue[Agent operations: review draft tasks]
-    Queue -->|Human prepares and saves intervention| Plan[Deployment plans]
-    Plan --> Local[(Browser-local account records)]
-    Night[Optional scheduled CLI] -->|Latest saved snapshot only| Bridge
+    Fixtures[Python seeded API-shaped fixtures] --> SQL[SQLite normalization and SQL metrics]
+    SQL --> Evidence[Versioned evidence catalogue]
+    Live[Configured live provider adapters] --> Separate[Separate live evidence catalogue]
+    Evidence --> Rules[Shared diagnostic rules]
+    Separate --> Rules
+    Rules --> Triage[Triage]
+    Triage --> Plans[Recommendations with evidence]
+    Plans --> Drafts[Deduplicated internal drafts]
+    Drafts --> DB[(Shared records and run history)]
+    UI[Browser account workflow] <--> API[Authenticated API and revision checks]
+    API <--> DB
+    DB --> Review[Human outcome review]
+    Review --> QBR[Validated one-page QBR]
+    DB --> Approved[Exact external action approval]
+    Approved --> MCP[Allowlisted MCP execution]
 ```
 
-The nightly CLI exists, but no schedule is enabled. It reuses a saved snapshot; it cannot collect fresh usage or see subsequent browser edits until another manual run submits them.
+The local web server and hosted Worker use the same JavaScript diagnostic and persistence modules. Local storage is SQLite; hosted storage is D1 with generated migrations. Python owns reproducible data generation and SQL aggregation. Its earlier offline agent CLI remains available, but the web Agent operations screen now uses the shared runtime and database.
 
-## The five features form a human-led workflow
+The five feature screens are success plan, action inbox, reproduction packet, outcome review and reviewed QBR. They connect by objective, deployment and feedback identifiers. Review records reference evidence snapshots. Changed content requires a new review; server audit timestamps do not change the approved content.
 
-```mermaid
-flowchart LR
-    Goal[1. Account success plan] -->|Objectives link to interventions| Inbox[2. Action inbox]
-    Inbox -->|Technical friction when relevant| Packet[3. Reproduction packet]
-    Packet -->|Intervention followed by measurement| Review[4. Outcome review]
-    Inbox -->|No reproduction needed| Review
-    Review -->|Current reviewed evidence| QBR[5. Reviewed QBR]
-    QBR -->|Next review cycle| Goal
-```
+Workspace writes use revision checks to prevent silent overwrites. The hosted API requires platform identity and same-origin writes; local operation records `local-operator`. This is a single-account workspace, not enterprise tenancy or a complete role-based CRM.
 
-- The success plan records the customer's intended outcomes, sponsor and objectives.
-- The action inbox derives outstanding work from interventions and feedback. It does not automatically consume unimported agent drafts.
-- A reproduction packet links technical evidence to feedback and an intervention. It is optional for interventions without technical friction.
-- Outcome review compares the recorded measurement with the target and quality guardrail. A human chooses collect evidence, expand, revise or stop.
-- Reviewed QBR combines objectives and current reviewed observations into a draft. A human reviews the text before export. Changed evidence invalidates the approval.
+Live snapshots and normalized evidence are stored separately from the synthetic account. Customer mapping and credentials are required; no live integration was verified during development. External tools require a configured endpoint, allowlist, exact approved arguments and explicit execution. Default mode is dry-run. Unknown outcomes are not retried automatically.
 
-Records connect through objective, deployment and feedback identifiers, not agent-to-agent conversations. Saving a screen does not automatically advance every other screen or send anything externally.
+The nightly repository workflow runs at 02:00 Singapore and produces an offline artifact. It does not synchronize the hosted database or execute external actions. A separately configured environment can invoke the read-only live scheduling entry point. The fixed synthetic window remains disclosed in every offline run.
 
-## Storage and integration boundaries
-
-Account plans, interventions, feedback, reproduction packets, outcome reviews and QBR approvals live in browser local storage. Runtime snapshots, runs and draft tasks live in SQLite. These are two stores with explicit submission/import handoffs, not a synchronized shared CRM.
-
-The developer-tool connector checks one bundled provider's Admin access. MCP performs a limited handshake. CRM, team chat, support and tracker connectors are simulations. Neutral connector names describe categories, not universal compatibility. Actual endpoint, SDK and dependency identifiers remain in implementation files so the adapters remain technically accurate.
-
-The planned next architecture adds validated source adapters, normalized SQL metrics, fresh scheduled ingestion and shared authenticated persistence. See [planned data pipeline](architecture.md). Adoption and attribution remain diagnostic evidence, not proof of causal productivity gains.
+See [implementation status](implementation-status.md) and [live configuration](live-operations.md) for remaining limits.

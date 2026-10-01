@@ -10,6 +10,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
+sys.path.insert(0,str(ROOT.parent))
+from data.diagnostics import diagnose, R
 DB = ROOT / 'state' / 'workflow.sqlite'
 
 def connect(path=DB):
@@ -34,6 +36,7 @@ def validate(snapshot):
         if not isinstance(t.get('name'), str):
             raise ValueError('Missing team identity.')
         for k in ['a', 'p', 'u']:
+            if t.get(k) is None and (t.get('valid') is False or (k=='p' and t.get('comparable') is False)): continue
             if not isinstance(t.get(k), (int, float)) or not math.isfinite(t[k]) or not 0 <= t[k] <= 100:
                 raise ValueError('Invalid percentage.')
         if not isinstance(t.get('size'), int) or t['size'] <= 0:
@@ -47,18 +50,18 @@ class TriageAgent:
         validate(snapshot)
         rows = []
         for t in snapshot['teams']:
-            rows.append({**t, 'score': round(.7*t['a']+.3*t['u'], 1),
-                         'delta': t['a']-t['p'], 'stalled': t['a']<55 and t['a']-t['p']<=2,
-                         'evidence_id': 'analytics:' + t['name'], 'tracking_gap': t.get('c') is None})
-        score = sum((.7*t['a']+.3*t['u'])*t['size'] for t in rows)/400
+            rows.append({**t, **diagnose(t),
+                         'evidence_id': next((x for x in t.get('evidence_ids',[]) if 'current-agent_acceptance' in x),'analytics:' + t['name']), 'tracking_gap': t.get('c') is None})
+        included=sum(t['size'] for t in rows if t['score'] is not None)
+        score=sum(t['score']*t['size'] for t in rows if t['score'] is not None)/included if included>=400*R['minAccountCoverage'] else None
         deployments = snapshot.get('workspace', {}).get('deployments', [])
         feedback = snapshot.get('workspace', {}).get('feedback', [])
         blocked = sum(d.get('status')=='Blocked' for d in deployments if isinstance(d, dict))
-        summary = f"Synthetic adoption signal {score:.1f}/100; {sum(t['stalled'] for t in rows)} teams warrant stalled-acceptance investigation; {sum(t['tracking_gap'] for t in rows)} tracking gap; {blocked} blocked interventions."
-        return {'name': self.name, 'summary': summary, 'teams': rows, 'account_score': round(score, 1),
+        summary = f"Synthetic adoption signal {round(score,1) if score is not None else 'withheld'}/100; {sum(bool(t['stalled']) for t in rows)} teams warrant stalled-acceptance investigation; {sum(t['tracking_gap'] for t in rows)} tracking gap; {blocked} blocked interventions."
+        return {'name': self.name, 'summary': summary, 'teams': rows, 'account_score': round(score, 1) if score is not None else None,
                 'blocked_interventions': blocked, 'feedback_count': len(feedback),
                 'limitations': ['Fixed synthetic observation window ends 2026-09-28; this is not new daily telemetry.',
-                    'Analytics completeness is assumed by this fixture adapter, not checked against raw API responses.',
+                    'Published offline evidence checks completeness; legacy custom snapshots require independent validation.',
                     'Browser edits are included only after Run workflow submits a new snapshot.',
                     'Adoption score is a heuristic; no causal productivity or renewal prediction.']}
 
@@ -67,12 +70,15 @@ class SolutionAgent:
     def run(self, triage):
         plans = []
         for t in triage['teams']:
+            if not t['valid'] or not t['comparable']:
+                plans.append({'team':t['name'],'rule':'measurement-repair','kind':'measurement_repair','action':'Restore comparable complete measurement windows.','why':'Evidence gates failed; no acceptance trend inferred.','evidence_id':t['evidence_id'],'baseline':None,'metric':'Measurement completeness','success_criterion':'Restore eligible evidence before intervention interpretation.','target':None,'quality':'Not assessed'})
+                continue
             if t['stalled']:
-                rule = 'rejected-edit-review' if t['u'] >= 70 else 'bounded-pilot'
-                action = 'Review rejected edits and task fit with the champion.' if t['u'] >= 70 else 'Run a bounded legacy-code pilot with a champion.'
-            elif t['delta'] <= -10:
+                rule = 'rejected-edit-review' if t['u'] >= R['highActive'] else 'bounded-pilot'
+                action = 'Review rejected edits and task fit with the champion.' if t['u'] >= R['highActive'] else 'Run a bounded legacy-code pilot with a champion.'
+            elif t['delta'] <= R['decline']:
                 rule, action = 'workflow-review', 'Review workflow changes and repository context.'
-            elif t['delta'] > 2:
+            elif t['delta'] > R['improvement']:
                 rule, action = 'staged-expansion', 'Assess suitability before expanding an adjacent workflow.'
             else:
                 rule, action = 'practice-review', 'Review successful practices and remaining adoption barriers.'

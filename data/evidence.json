@@ -1,0 +1,1062 @@
+{
+  "version": 1,
+  "run_id": "offline-60cfdc0e6a9e5d15",
+  "datasetVersion": "60cfdc0e6a9e5d15",
+  "rulesVersion": "1.0",
+  "source": "synthetic",
+  "window": {
+    "start": "2026-07-01",
+    "end": "2026-09-28"
+  },
+  "teams": [
+    {
+      "name": "Digital Channels",
+      "size": 90,
+      "evidence_ids": [
+        "EV-1-prior-agent_acceptance",
+        "EV-1-prior-active_share",
+        "EV-1-prior-ai_commit_share",
+        "EV-1-current-agent_acceptance",
+        "EV-1-current-active_share",
+        "EV-1-current-ai_commit_share"
+      ],
+      "p": 73.0,
+      "comparable": true,
+      "a": 78.0,
+      "u": 84.0,
+      "c": 43.0,
+      "valid": true
+    },
+    {
+      "name": "Payments",
+      "size": 80,
+      "evidence_ids": [
+        "EV-2-prior-agent_acceptance",
+        "EV-2-prior-active_share",
+        "EV-2-prior-ai_commit_share",
+        "EV-2-current-agent_acceptance",
+        "EV-2-current-active_share",
+        "EV-2-current-ai_commit_share"
+      ],
+      "p": 64.0,
+      "comparable": true,
+      "a": 48.0,
+      "u": 82.0,
+      "c": 32.0,
+      "valid": true
+    },
+    {
+      "name": "Core Banking",
+      "size": 85,
+      "evidence_ids": [
+        "EV-3-prior-agent_acceptance",
+        "EV-3-prior-active_share",
+        "EV-3-prior-ai_commit_share",
+        "EV-3-current-agent_acceptance",
+        "EV-3-current-active_share",
+        "EV-3-current-ai_commit_share"
+      ],
+      "p": 34.0,
+      "comparable": true,
+      "a": 35.0,
+      "u": 36.0,
+      "c": 14.0,
+      "valid": true
+    },
+    {
+      "name": "Risk & Compliance",
+      "size": 55,
+      "evidence_ids": [
+        "EV-4-prior-agent_acceptance",
+        "EV-4-prior-active_share",
+        "EV-4-prior-ai_commit_share",
+        "EV-4-current-agent_acceptance",
+        "EV-4-current-active_share",
+        "EV-4-current-ai_commit_share"
+      ],
+      "p": 46.0,
+      "comparable": true,
+      "a": 52.0,
+      "u": 44.0,
+      "c": 18.0,
+      "valid": true
+    },
+    {
+      "name": "Data Platform",
+      "size": 50,
+      "evidence_ids": [
+        "EV-5-prior-agent_acceptance",
+        "EV-5-prior-active_share",
+        "EV-5-prior-ai_commit_share",
+        "EV-5-current-agent_acceptance",
+        "EV-5-current-active_share",
+        "EV-5-current-ai_commit_share"
+      ],
+      "p": 60.0,
+      "comparable": true,
+      "a": 70.0,
+      "u": 72.0,
+      "c": 39.0,
+      "valid": true
+    },
+    {
+      "name": "Developer Platform",
+      "size": 40,
+      "evidence_ids": [
+        "EV-6-prior-agent_acceptance",
+        "EV-6-prior-active_share",
+        "EV-6-prior-ai_commit_share",
+        "EV-6-current-agent_acceptance",
+        "EV-6-current-active_share",
+        "EV-6-current-ai_commit_share"
+      ],
+      "p": 74.0,
+      "comparable": true,
+      "a": 76.0,
+      "u": 88.0,
+      "c": null,
+      "valid": true
+    }
+  ],
+  "records": [
+    {
+      "id": "EV-1-prior-agent_acceptance",
+      "team": "Digital Channels",
+      "metric": "agent_acceptance",
+      "unit": "%",
+      "value": 73.0,
+      "numerator": 3650,
+      "denominator": 5000,
+      "window": {
+        "start": "2026-08-04",
+        "end": "2026-08-31"
+      },
+      "period": "prior",
+      "sourceRefs": [
+        "data/generated/fixtures/team-1/agent-edits.json",
+        "SQL:agent_acceptance;team=Digital Channels;start=2026-08-04;end=2026-08-31"
+      ],
+      "datasetVersion": "60cfdc0e6a9e5d15",
+      "eligible": true,
+      "completeness": 1.0
+    },
+    {
+      "id": "EV-1-prior-active_share",
+      "team": "Digital Channels",
+      "metric": "active_share",
+      "unit": "%",
+      "value": 84.0,
+      "numerator": 1512,
+      "denominator": 1800,
+      "window": {
+        "start": "2026-08-04",
+        "end": "2026-08-31"
+      },
+      "period": "prior",
+      "sourceRefs": [
+        "data/generated/fixtures/team-1/dau.json",
+        "SQL:active_share;team=Digital Channels;start=2026-08-04;end=2026-08-31"
+      ],
+      "datasetVersion": "60cfdc0e6a9e5d15",
+      "eligible": true,
+      "completeness": 1.0
+    },
+    {
+      "id": "EV-1-prior-ai_commit_share",
+      "team": "Digital Channels",
+      "metric": "ai_commit_share",
+      "unit": "%",
+      "value": 43.0,
+      "numerator": 2408,
+      "denominator": 5600,
+      "window": {
+        "start": "2026-08-04",
+        "end": "2026-08-31"
+      },
+      "period": "prior",
+      "sourceRefs": [
+        "data/generated/fixtures/commits-1.json#057a825d5e5bea8f9cdc9e60710c08221cedb111",
+        "data/generated/fixtures/commits-1.json#0f7cbdaaf1f0de636a9a165bc74cc25ae03d327f",
+        "data/generated/fixtures/commits-1.json#13d5bdcb6cafc9055e06aab1c6c2ea8015d571ba",
+        "data/generated/fixtures/commits-1.json#147fc3edc09ac75b1bf768125d42d0a47f69a140",
+        "data/generated/fixtures/commits-1.json#20794c52d8ec8788ddbf8f1d3ec9130265fb0d16",
+        "data/generated/fixtures/commits-1.json#2b8a66c5e9c1d9310188d1f433feb2325964dac8",
+        "data/generated/fixtures/commits-1.json#4a48358748855a243809ee3a6ac06271eab86d22",
+        "data/generated/fixtures/commits-1.json#55ebb4d6e6056ba9f704819348c5fb4204936939",
+        "data/generated/fixtures/commits-1.json#74817d27375212d36f4e65c763e50244bc51fe30",
+        "data/generated/fixtures/commits-1.json#8d3b97173cc9a5e74e5e773c9cf6fac935ccf87e",
+        "data/generated/fixtures/commits-1.json#8deb2012713b9cf5d1cee5c02c8eb86b21392b96",
+        "data/generated/fixtures/commits-1.json#9195722c8291d9ba267b147b34a9daa16c7f50e5",
+        "data/generated/fixtures/commits-1.json#95239ad677e8bfd436fd08a15516b98ee2684973",
+        "data/generated/fixtures/commits-1.json#9a1085095aa0873c77811ba976c1a2aa6b759410",
+        "data/generated/fixtures/commits-1.json#ac28a93f8e8bac06e234a1b83cbc13cef6bb17ec",
+        "data/generated/fixtures/commits-1.json#c21efc83de67d4f78055ff16ddaa80c852768042",
+        "data/generated/fixtures/commits-1.json#ee9478cb4e6bdfcbb00511b727a60f1440061c48",
+        "data/generated/fixtures/commits-1.json#efe9a51322438279195c5e6d7027eb1e2ef6e690",
+        "data/generated/fixtures/commits-1.json#f3d6c8d1427e4e3c1902135d63a8befab40c0841",
+        "data/generated/fixtures/commits-1.json#f6f2470df4ff2a24f02f9c17984152e69f5b0792"
+      ],
+      "datasetVersion": "60cfdc0e6a9e5d15",
+      "eligible": true,
+      "completeness": 1.0
+    },
+    {
+      "id": "EV-1-current-agent_acceptance",
+      "team": "Digital Channels",
+      "metric": "agent_acceptance",
+      "unit": "%",
+      "value": 78.0,
+      "numerator": 4446,
+      "denominator": 5700,
+      "window": {
+        "start": "2026-09-01",
+        "end": "2026-09-28"
+      },
+      "period": "current",
+      "sourceRefs": [
+        "data/generated/fixtures/team-1/agent-edits.json",
+        "SQL:agent_acceptance;team=Digital Channels;start=2026-09-01;end=2026-09-28"
+      ],
+      "datasetVersion": "60cfdc0e6a9e5d15",
+      "eligible": true,
+      "completeness": 1.0
+    },
+    {
+      "id": "EV-1-current-active_share",
+      "team": "Digital Channels",
+      "metric": "active_share",
+      "unit": "%",
+      "value": 84.0,
+      "numerator": 1512,
+      "denominator": 1800,
+      "window": {
+        "start": "2026-09-01",
+        "end": "2026-09-28"
+      },
+      "period": "current",
+      "sourceRefs": [
+        "data/generated/fixtures/team-1/dau.json",
+        "SQL:active_share;team=Digital Channels;start=2026-09-01;end=2026-09-28"
+      ],
+      "datasetVersion": "60cfdc0e6a9e5d15",
+      "eligible": true,
+      "completeness": 1.0
+    },
+    {
+      "id": "EV-1-current-ai_commit_share",
+      "team": "Digital Channels",
+      "metric": "ai_commit_share",
+      "unit": "%",
+      "value": 43.0,
+      "numerator": 2795,
+      "denominator": 6500,
+      "window": {
+        "start": "2026-09-01",
+        "end": "2026-09-28"
+      },
+      "period": "current",
+      "sourceRefs": [
+        "data/generated/fixtures/commits-1.json#1f516e7f38ba6a366aa55cf55503ea222d616fbb",
+        "data/generated/fixtures/commits-1.json#294e358baaf9a61b5c2866f853826b4e16de5710",
+        "data/generated/fixtures/commits-1.json#3b7a709631dd529a94234a8e300cff2acf7c1a70",
+        "data/generated/fixtures/commits-1.json#46d8f4da9965ae3d63ab2ea71644fd392e833482",
+        "data/generated/fixtures/commits-1.json#4c537c0241a7c3f4db15b028e386ab86cb6e67e2",
+        "data/generated/fixtures/commits-1.json#687642c4b117732bd31262f0153bc52758ea9caf",
+        "data/generated/fixtures/commits-1.json#6e9b3b1db9aedfc117993074986c6db942648d76",
+        "data/generated/fixtures/commits-1.json#81213b632b947fc4372107bf31a36cd249f29f03",
+        "data/generated/fixtures/commits-1.json#8131d4d19f435a541a4015130d8e84a934d35b8e",
+        "data/generated/fixtures/commits-1.json#815b5139a351516185f9c1996c5f5193c15a811a",
+        "data/generated/fixtures/commits-1.json#85c1450f94160321c310f182184819fff3fb8c1c",
+        "data/generated/fixtures/commits-1.json#86fa4432daf6e8374af7c1244c0d0871965b7910",
+        "data/generated/fixtures/commits-1.json#8befc0f0dcabee2cadd170f922962316d7828097",
+        "data/generated/fixtures/commits-1.json#8e2555f2bab7df3a87493a6983a27782381d2cca",
+        "data/generated/fixtures/commits-1.json#b4c546882e3004e155c03c63e123ca080f372ce4",
+        "data/generated/fixtures/commits-1.json#b7ff9d254e2aa846e41acf0daaa5f800d3ce044b",
+        "data/generated/fixtures/commits-1.json#bbe4fc910eecb936fabb8d55f0b166873ee015b6",
+        "data/generated/fixtures/commits-1.json#cd2a92a786cc40183b98ea0c99ebd70e034aa625",
+        "data/generated/fixtures/commits-1.json#d5a79ae602db2472a17d99f406c5d8c9f42e5bae",
+        "data/generated/fixtures/commits-1.json#e7baa77d55497cf5de7d9359e553ccdb5e43b024"
+      ],
+      "datasetVersion": "60cfdc0e6a9e5d15",
+      "eligible": true,
+      "completeness": 1.0
+    },
+    {
+      "id": "EV-2-prior-agent_acceptance",
+      "team": "Payments",
+      "metric": "agent_acceptance",
+      "unit": "%",
+      "value": 64.0,
+      "numerator": 2688,
+      "denominator": 4200,
+      "window": {
+        "start": "2026-08-04",
+        "end": "2026-08-31"
+      },
+      "period": "prior",
+      "sourceRefs": [
+        "data/generated/fixtures/team-2/agent-edits.json",
+        "SQL:agent_acceptance;team=Payments;start=2026-08-04;end=2026-08-31"
+      ],
+      "datasetVersion": "60cfdc0e6a9e5d15",
+      "eligible": true,
+      "completeness": 1.0
+    },
+    {
+      "id": "EV-2-prior-active_share",
+      "team": "Payments",
+      "metric": "active_share",
+      "unit": "%",
+      "value": 82.0,
+      "numerator": 1312,
+      "denominator": 1600,
+      "window": {
+        "start": "2026-08-04",
+        "end": "2026-08-31"
+      },
+      "period": "prior",
+      "sourceRefs": [
+        "data/generated/fixtures/team-2/dau.json",
+        "SQL:active_share;team=Payments;start=2026-08-04;end=2026-08-31"
+      ],
+      "datasetVersion": "60cfdc0e6a9e5d15",
+      "eligible": true,
+      "completeness": 1.0
+    },
+    {
+      "id": "EV-2-prior-ai_commit_share",
+      "team": "Payments",
+      "metric": "ai_commit_share",
+      "unit": "%",
+      "value": 32.0,
+      "numerator": 1888,
+      "denominator": 5900,
+      "window": {
+        "start": "2026-08-04",
+        "end": "2026-08-31"
+      },
+      "period": "prior",
+      "sourceRefs": [
+        "data/generated/fixtures/commits-1.json#06b39d8e41888273a365c36d229a6ba02064990c",
+        "data/generated/fixtures/commits-1.json#0911a6facf1a88686a20626e91d363f04ff1eb8b",
+        "data/generated/fixtures/commits-1.json#19e9bec533e10e1830fd0931f16a6afe9da6c348",
+        "data/generated/fixtures/commits-1.json#1b65de7f5a1b89224687145b9213bd38f827ed2e",
+        "data/generated/fixtures/commits-1.json#2905df892893a3d9d9de2737535cd9b26efd2a32",
+        "data/generated/fixtures/commits-1.json#33d53e514ef298b5cdf1878e2a78207d555ff80c",
+        "data/generated/fixtures/commits-1.json#41cc04b3d049fd2de7a1ce56fcfd879099eec080",
+        "data/generated/fixtures/commits-1.json#49122e4b28e2f0a268c320364d4de648802f804e",
+        "data/generated/fixtures/commits-1.json#8165e5793d7ee90034e6a9d6f0aa7596b8a2d12e",
+        "data/generated/fixtures/commits-1.json#92774d02f2bc8004e26cd6b11d3739da7b8fc0f6",
+        "data/generated/fixtures/commits-1.json#c8dfb33bacf8edc837dfb12d90162e0420f2f206",
+        "data/generated/fixtures/commits-1.json#e9a2890f37bf520cae8d8c5ac255e2ad3d99e69c",
+        "data/generated/fixtures/commits-2.json#0405380a019cc72de00848b1fd52b0457115b8fc",
+        "data/generated/fixtures/commits-2.json#3b85a4c991b6c599e3794e447e57f3f267b71053",
+        "data/generated/fixtures/commits-2.json#5ac666af871fd6222dcfcd2e1692836649b185f0",
+        "data/generated/fixtures/commits-2.json#635f2311249604d9af8738ec7b4b251c503c42b4",
+        "data/generated/fixtures/commits-2.json#85f7b24c438dea19198de93e544485f9adadd92d",
+        "data/generated/fixtures/commits-2.json#9228b5ca06169a44ee03586d97813d4898ac98a7",
+        "data/generated/fixtures/commits-2.json#a3380fe49f183a0656397baa1e61026d7c251eb0",
+        "data/generated/fixtures/commits-2.json#f5a6f0879bbeff4525738280bd793b55e858def6"
+      ],
+      "datasetVersion": "60cfdc0e6a9e5d15",
+      "eligible": true,
+      "completeness": 1.0
+    },
+    {
+      "id": "EV-2-current-agent_acceptance",
+      "team": "Payments",
+      "metric": "agent_acceptance",
+      "unit": "%",
+      "value": 48.0,
+      "numerator": 2592,
+      "denominator": 5400,
+      "window": {
+        "start": "2026-09-01",
+        "end": "2026-09-28"
+      },
+      "period": "current",
+      "sourceRefs": [
+        "data/generated/fixtures/team-2/agent-edits.json",
+        "SQL:agent_acceptance;team=Payments;start=2026-09-01;end=2026-09-28"
+      ],
+      "datasetVersion": "60cfdc0e6a9e5d15",
+      "eligible": true,
+      "completeness": 1.0
+    },
+    {
+      "id": "EV-2-current-active_share",
+      "team": "Payments",
+      "metric": "active_share",
+      "unit": "%",
+      "value": 82.0,
+      "numerator": 1312,
+      "denominator": 1600,
+      "window": {
+        "start": "2026-09-01",
+        "end": "2026-09-28"
+      },
+      "period": "current",
+      "sourceRefs": [
+        "data/generated/fixtures/team-2/dau.json",
+        "SQL:active_share;team=Payments;start=2026-09-01;end=2026-09-28"
+      ],
+      "datasetVersion": "60cfdc0e6a9e5d15",
+      "eligible": true,
+      "completeness": 1.0
+    },
+    {
+      "id": "EV-2-current-ai_commit_share",
+      "team": "Payments",
+      "metric": "ai_commit_share",
+      "unit": "%",
+      "value": 32.0,
+      "numerator": 1728,
+      "denominator": 5400,
+      "window": {
+        "start": "2026-09-01",
+        "end": "2026-09-28"
+      },
+      "period": "current",
+      "sourceRefs": [
+        "data/generated/fixtures/commits-2.json#056527dd6c240ca1932335845a051b01ec27753c",
+        "data/generated/fixtures/commits-2.json#1146a2aa32a195ec13c4ac13edf9d67fa24a2372",
+        "data/generated/fixtures/commits-2.json#1614f88d23d9215c6265143d941deab464d6aaf2",
+        "data/generated/fixtures/commits-2.json#27d7ac403c99cd053efeeecb6f2c56876b2f5e1a",
+        "data/generated/fixtures/commits-2.json#3ce254fb99036c3873ae4f09796d53e208af81c3",
+        "data/generated/fixtures/commits-2.json#586aa0a784c8cf803b431f031825810a8e4ef59a",
+        "data/generated/fixtures/commits-2.json#626bcc0faa727b084d6ee6e5bd04c0d76c61900c",
+        "data/generated/fixtures/commits-2.json#68b73f5aeef718e6a7ab89cc6a45a9b71d89b783",
+        "data/generated/fixtures/commits-2.json#73b11d43d26eccc63b35d4f305d08bd50fd006c9",
+        "data/generated/fixtures/commits-2.json#847d8d8019e2bba97eeb861dab0b307be65e42d4",
+        "data/generated/fixtures/commits-2.json#871bbbdfb6cf53e20fd7b27aee1a4c7c1005b97b",
+        "data/generated/fixtures/commits-2.json#8878465265f67f3f2e05f6b2564fe12290754ae3",
+        "data/generated/fixtures/commits-2.json#8fd0d24b243222a0559ca7b4fea411f8ee3da9f1",
+        "data/generated/fixtures/commits-2.json#9b2df9bd96ef9da935bae2177c4ab9c87e576fb2",
+        "data/generated/fixtures/commits-2.json#9d1ca52b5a14f5ca1151194851c15509d287341a",
+        "data/generated/fixtures/commits-2.json#b93f0dcc734a3a852bd4157e14fd6d192bc36e4c",
+        "data/generated/fixtures/commits-2.json#e1df9cde5b549a82d274d39e17e346792c15dd63",
+        "data/generated/fixtures/commits-2.json#ea286e7193e066188210103e724fb9fbfc26b71f",
+        "data/generated/fixtures/commits-2.json#eb6d683aa5510b61edc52165930126ad6f6d156c",
+        "data/generated/fixtures/commits-2.json#f387ff51eddd3d6753a01ba876d3ad5725c40332"
+      ],
+      "datasetVersion": "60cfdc0e6a9e5d15",
+      "eligible": true,
+      "completeness": 1.0
+    },
+    {
+      "id": "EV-3-prior-agent_acceptance",
+      "team": "Core Banking",
+      "metric": "agent_acceptance",
+      "unit": "%",
+      "value": 34.0,
+      "numerator": 1666,
+      "denominator": 4900,
+      "window": {
+        "start": "2026-08-04",
+        "end": "2026-08-31"
+      },
+      "period": "prior",
+      "sourceRefs": [
+        "data/generated/fixtures/team-3/agent-edits.json",
+        "SQL:agent_acceptance;team=Core Banking;start=2026-08-04;end=2026-08-31"
+      ],
+      "datasetVersion": "60cfdc0e6a9e5d15",
+      "eligible": true,
+      "completeness": 1.0
+    },
+    {
+      "id": "EV-3-prior-active_share",
+      "team": "Core Banking",
+      "metric": "active_share",
+      "unit": "%",
+      "value": 36.0,
+      "numerator": 612,
+      "denominator": 1700,
+      "window": {
+        "start": "2026-08-04",
+        "end": "2026-08-31"
+      },
+      "period": "prior",
+      "sourceRefs": [
+        "data/generated/fixtures/team-3/dau.json",
+        "SQL:active_share;team=Core Banking;start=2026-08-04;end=2026-08-31"
+      ],
+      "datasetVersion": "60cfdc0e6a9e5d15",
+      "eligible": true,
+      "completeness": 1.0
+    },
+    {
+      "id": "EV-3-prior-ai_commit_share",
+      "team": "Core Banking",
+      "metric": "ai_commit_share",
+      "unit": "%",
+      "value": 14.0,
+      "numerator": 826,
+      "denominator": 5900,
+      "window": {
+        "start": "2026-08-04",
+        "end": "2026-08-31"
+      },
+      "period": "prior",
+      "sourceRefs": [
+        "data/generated/fixtures/commits-2.json#12911b0edc1623db8bf806e8c2deff959358b0da",
+        "data/generated/fixtures/commits-2.json#16808ed97acf2a43f9a33ebfb54b9e678687a0a2",
+        "data/generated/fixtures/commits-2.json#1bd1404db504bae3356ad6d850f0cece27e34113",
+        "data/generated/fixtures/commits-2.json#4602cd7368a2c706e9b096f95f4f21dc179c4729",
+        "data/generated/fixtures/commits-2.json#46d88b99b8ba8a3722354b5fdb3bb79c124edfdb",
+        "data/generated/fixtures/commits-2.json#50d0bfbae05b4063b3ccb7001e83b73218902e2f",
+        "data/generated/fixtures/commits-2.json#6bac63a6d1c5607fde25179aeca21addb4c27b59",
+        "data/generated/fixtures/commits-2.json#7a485fe9ecc932d827e7f52f7fd1031fd37dfa05",
+        "data/generated/fixtures/commits-2.json#9cb2ef2f7f83a9209355e70db45cdcc7fabb237d",
+        "data/generated/fixtures/commits-2.json#9f17e3451bc30564e174f9747eb2da86eba2e54b",
+        "data/generated/fixtures/commits-2.json#a4c9d27f3b20b3fbc6e731efebe019b7da322261",
+        "data/generated/fixtures/commits-2.json#a92b1b7f01339c6bd7d6ec854163923fba317487",
+        "data/generated/fixtures/commits-2.json#af9e0d07d0ea3529830339736d4b291d88487d6d",
+        "data/generated/fixtures/commits-2.json#b508f240c48eb71c6c1e3d62338029990a208271",
+        "data/generated/fixtures/commits-2.json#ba1456d277601a35ff3d017139ddceeebf9cdb86",
+        "data/generated/fixtures/commits-2.json#c738c0e4e3d0d99b64fff9e210d1205f5102a715",
+        "data/generated/fixtures/commits-2.json#e71b04dca1b67e77889a91a7e9c21704279a8636",
+        "data/generated/fixtures/commits-2.json#ee28b69f260cb56ecea408384a56567e2966a6d0",
+        "data/generated/fixtures/commits-2.json#f3576a474d1125aaf5883944c97e88202ad8e0f3",
+        "data/generated/fixtures/commits-2.json#ff99fcbeaa2a1686de2ab915e090ccc417f7761e"
+      ],
+      "datasetVersion": "60cfdc0e6a9e5d15",
+      "eligible": true,
+      "completeness": 1.0
+    },
+    {
+      "id": "EV-3-current-agent_acceptance",
+      "team": "Core Banking",
+      "metric": "agent_acceptance",
+      "unit": "%",
+      "value": 35.0,
+      "numerator": 1610,
+      "denominator": 4600,
+      "window": {
+        "start": "2026-09-01",
+        "end": "2026-09-28"
+      },
+      "period": "current",
+      "sourceRefs": [
+        "data/generated/fixtures/team-3/agent-edits.json",
+        "SQL:agent_acceptance;team=Core Banking;start=2026-09-01;end=2026-09-28"
+      ],
+      "datasetVersion": "60cfdc0e6a9e5d15",
+      "eligible": true,
+      "completeness": 1.0
+    },
+    {
+      "id": "EV-3-current-active_share",
+      "team": "Core Banking",
+      "metric": "active_share",
+      "unit": "%",
+      "value": 36.0,
+      "numerator": 612,
+      "denominator": 1700,
+      "window": {
+        "start": "2026-09-01",
+        "end": "2026-09-28"
+      },
+      "period": "current",
+      "sourceRefs": [
+        "data/generated/fixtures/team-3/dau.json",
+        "SQL:active_share;team=Core Banking;start=2026-09-01;end=2026-09-28"
+      ],
+      "datasetVersion": "60cfdc0e6a9e5d15",
+      "eligible": true,
+      "completeness": 1.0
+    },
+    {
+      "id": "EV-3-current-ai_commit_share",
+      "team": "Core Banking",
+      "metric": "ai_commit_share",
+      "unit": "%",
+      "value": 14.0,
+      "numerator": 728,
+      "denominator": 5200,
+      "window": {
+        "start": "2026-09-01",
+        "end": "2026-09-28"
+      },
+      "period": "current",
+      "sourceRefs": [
+        "data/generated/fixtures/commits-2.json#0bc88add9d245cbd3c6d532c76fd211c7d7fcbe6",
+        "data/generated/fixtures/commits-2.json#2973c4d6d7ea3603419c8878749add8231c1cfd9",
+        "data/generated/fixtures/commits-2.json#356f7f13d055d47c81e6c5a02cfac47929e1e29a",
+        "data/generated/fixtures/commits-2.json#4104bce5b12208eb91dc048a9d92dd3a7fa5e170",
+        "data/generated/fixtures/commits-2.json#4be02f984262b336f457397539cedc523b894a7a",
+        "data/generated/fixtures/commits-2.json#4e4f79fd15217e47b8fc7f4805d6e35118fe9f5f",
+        "data/generated/fixtures/commits-2.json#5612818099cb7f8a2a3444019f3310a9a88c904d",
+        "data/generated/fixtures/commits-2.json#6413fa5c863aeca8ea7b7cc8fb4c67644c12552d",
+        "data/generated/fixtures/commits-2.json#67b575c712dda8b6183fc279957c6761857b03f5",
+        "data/generated/fixtures/commits-2.json#725437b3e152d87ee00eba0bf6b58ff542d009b0",
+        "data/generated/fixtures/commits-2.json#7c5dae53a7e689240d8753b270ebf985a3f6f757",
+        "data/generated/fixtures/commits-2.json#8412c5cb293bd9a5ffef595bb424b8d01625c6bb",
+        "data/generated/fixtures/commits-2.json#867ca20222c2d8b8f7b6c8ed1046a4d1eeaccdd1",
+        "data/generated/fixtures/commits-2.json#aec48ba8ffa26c9e0b386c537b9e87a0f5fbc03b",
+        "data/generated/fixtures/commits-2.json#aedc333478d20e10643bfddb5d936c6ad243d33d",
+        "data/generated/fixtures/commits-2.json#b08fd5dca459151a6a7a0a67f355b9792abb2cca",
+        "data/generated/fixtures/commits-2.json#c9099465c3b5a558a2461e480ba2e3afc7f3f785",
+        "data/generated/fixtures/commits-2.json#d71b3f78cc40066b6d8d3e0a5a95f7a32b5b1bd3",
+        "data/generated/fixtures/commits-2.json#d74ac891568a8427be993b4fa4353c5f93773a8e",
+        "data/generated/fixtures/commits-2.json#eeda024930f9138a5341e67671b89f95c4b01098"
+      ],
+      "datasetVersion": "60cfdc0e6a9e5d15",
+      "eligible": true,
+      "completeness": 1.0
+    },
+    {
+      "id": "EV-4-prior-agent_acceptance",
+      "team": "Risk & Compliance",
+      "metric": "agent_acceptance",
+      "unit": "%",
+      "value": 46.0,
+      "numerator": 2392,
+      "denominator": 5200,
+      "window": {
+        "start": "2026-08-04",
+        "end": "2026-08-31"
+      },
+      "period": "prior",
+      "sourceRefs": [
+        "data/generated/fixtures/team-4/agent-edits.json",
+        "SQL:agent_acceptance;team=Risk & Compliance;start=2026-08-04;end=2026-08-31"
+      ],
+      "datasetVersion": "60cfdc0e6a9e5d15",
+      "eligible": true,
+      "completeness": 1.0
+    },
+    {
+      "id": "EV-4-prior-active_share",
+      "team": "Risk & Compliance",
+      "metric": "active_share",
+      "unit": "%",
+      "value": 44.0,
+      "numerator": 484,
+      "denominator": 1100,
+      "window": {
+        "start": "2026-08-04",
+        "end": "2026-08-31"
+      },
+      "period": "prior",
+      "sourceRefs": [
+        "data/generated/fixtures/team-4/dau.json",
+        "SQL:active_share;team=Risk & Compliance;start=2026-08-04;end=2026-08-31"
+      ],
+      "datasetVersion": "60cfdc0e6a9e5d15",
+      "eligible": true,
+      "completeness": 1.0
+    },
+    {
+      "id": "EV-4-prior-ai_commit_share",
+      "team": "Risk & Compliance",
+      "metric": "ai_commit_share",
+      "unit": "%",
+      "value": 18.0,
+      "numerator": 1188,
+      "denominator": 6600,
+      "window": {
+        "start": "2026-08-04",
+        "end": "2026-08-31"
+      },
+      "period": "prior",
+      "sourceRefs": [
+        "data/generated/fixtures/commits-3.json#00820aeea11ffe73ee3f1cbd9e412579e65e7743",
+        "data/generated/fixtures/commits-3.json#0b5167c135bc2bb65ae1649b52ac1b55422882c7",
+        "data/generated/fixtures/commits-3.json#28fd1a3a0776a647db897036288c09929f50656d",
+        "data/generated/fixtures/commits-3.json#4019175439fd76ba3925854a6b54846b9ec8cbf8",
+        "data/generated/fixtures/commits-3.json#474bee7de320b2e87bc01e973ffc196efcd9882f",
+        "data/generated/fixtures/commits-3.json#57d64623d019550abfb0ede82099a5ddf1228a45",
+        "data/generated/fixtures/commits-3.json#590b7d105c126138efc4ac75ae02ea1c63f88901",
+        "data/generated/fixtures/commits-3.json#5ea9d864f2da5d7acada732524626e8643475a88",
+        "data/generated/fixtures/commits-3.json#884b7cab43f0fd3390ac43befd65be9e52f5e621",
+        "data/generated/fixtures/commits-3.json#8965532543d444eb697f037c311bbdce560b9f11",
+        "data/generated/fixtures/commits-3.json#8f8a5795a94f41790978e341cf13e864ca571c67",
+        "data/generated/fixtures/commits-3.json#950ab9cbaac588579ecf7a7d053a71a1dbfa5a96",
+        "data/generated/fixtures/commits-3.json#954e3395aaabff5cec03468433aab0c4d4327980",
+        "data/generated/fixtures/commits-3.json#b28a2f7a1f3548930539ee894ccd3aaa43e17018",
+        "data/generated/fixtures/commits-3.json#badfc77feb1a8f31e222afad38d13c9920ec75f1",
+        "data/generated/fixtures/commits-3.json#c5f35edca53bed8558d1eec5a5fc22e763c35d10",
+        "data/generated/fixtures/commits-3.json#c90899ebcf5e1513ef9b601b2d7cb4bd14708d9f",
+        "data/generated/fixtures/commits-3.json#d8dfa42b9dd8c64dc1d1bf3294f713ae6a6a94c1",
+        "data/generated/fixtures/commits-3.json#e8b2134f9507ce1bb004b77783a589fc999b9928",
+        "data/generated/fixtures/commits-3.json#f3326acbdb8e14f3176d38d8bc6fbb3aff5e1a6c"
+      ],
+      "datasetVersion": "60cfdc0e6a9e5d15",
+      "eligible": true,
+      "completeness": 1.0
+    },
+    {
+      "id": "EV-4-current-agent_acceptance",
+      "team": "Risk & Compliance",
+      "metric": "agent_acceptance",
+      "unit": "%",
+      "value": 52.0,
+      "numerator": 3120,
+      "denominator": 6000,
+      "window": {
+        "start": "2026-09-01",
+        "end": "2026-09-28"
+      },
+      "period": "current",
+      "sourceRefs": [
+        "data/generated/fixtures/team-4/agent-edits.json",
+        "SQL:agent_acceptance;team=Risk & Compliance;start=2026-09-01;end=2026-09-28"
+      ],
+      "datasetVersion": "60cfdc0e6a9e5d15",
+      "eligible": true,
+      "completeness": 1.0
+    },
+    {
+      "id": "EV-4-current-active_share",
+      "team": "Risk & Compliance",
+      "metric": "active_share",
+      "unit": "%",
+      "value": 44.0,
+      "numerator": 484,
+      "denominator": 1100,
+      "window": {
+        "start": "2026-09-01",
+        "end": "2026-09-28"
+      },
+      "period": "current",
+      "sourceRefs": [
+        "data/generated/fixtures/team-4/dau.json",
+        "SQL:active_share;team=Risk & Compliance;start=2026-09-01;end=2026-09-28"
+      ],
+      "datasetVersion": "60cfdc0e6a9e5d15",
+      "eligible": true,
+      "completeness": 1.0
+    },
+    {
+      "id": "EV-4-current-ai_commit_share",
+      "team": "Risk & Compliance",
+      "metric": "ai_commit_share",
+      "unit": "%",
+      "value": 18.0,
+      "numerator": 1098,
+      "denominator": 6100,
+      "window": {
+        "start": "2026-09-01",
+        "end": "2026-09-28"
+      },
+      "period": "current",
+      "sourceRefs": [
+        "data/generated/fixtures/commits-3.json#027e43a0932210678af83a352f365567a889e456",
+        "data/generated/fixtures/commits-3.json#0842d6595c4992770eb565f54c74a1bc330f92af",
+        "data/generated/fixtures/commits-3.json#1f9ba53299301e868aec4906a31d832480ed10b6",
+        "data/generated/fixtures/commits-3.json#222d70f314d34846eeac8d64b95a12be7ac6f4a2",
+        "data/generated/fixtures/commits-3.json#2852cf77dfcbcd98e670fd39775fff39a8e9635d",
+        "data/generated/fixtures/commits-3.json#4496d8eacb033c818eeafb317bc73f303d237e88",
+        "data/generated/fixtures/commits-3.json#6250604b0a2c82094fcd8c43dd714a42ecf46dad",
+        "data/generated/fixtures/commits-3.json#673409294419e5c149d1320466cb567e2d66f337",
+        "data/generated/fixtures/commits-3.json#700ab40bfae62441c1136f8c9609b3fa09fa6866",
+        "data/generated/fixtures/commits-3.json#70caf2acdab93f24c73f54f1550f15c7a0fa00c4",
+        "data/generated/fixtures/commits-3.json#7ba60505100a15b6d3aa3c26790157e6429286b4",
+        "data/generated/fixtures/commits-3.json#87e30a040be1adc7ae92c459a7846494c0644195",
+        "data/generated/fixtures/commits-3.json#8f4aa24984303ee4962f20f2f429e98fc75563ba",
+        "data/generated/fixtures/commits-3.json#a063b2e7614844ef2c0ae44bb1c812b9ee073dc9",
+        "data/generated/fixtures/commits-3.json#afa6f561449b4178d93dc4cc249355f2f3788ef2",
+        "data/generated/fixtures/commits-3.json#c4a6084c322d1cceb8a413e2e0af48cebf4d918d",
+        "data/generated/fixtures/commits-3.json#cee9616242dc5ee8214da5708d62249f60937d74",
+        "data/generated/fixtures/commits-3.json#e12e8f85ae14dabd98528d6ac0c85db5467a330a",
+        "data/generated/fixtures/commits-3.json#ec64e1bd7cb6a7f0284e1156a6d26fc60c4726b2",
+        "data/generated/fixtures/commits-3.json#fb6d93630c84abdef01049282169e649837e17d2"
+      ],
+      "datasetVersion": "60cfdc0e6a9e5d15",
+      "eligible": true,
+      "completeness": 1.0
+    },
+    {
+      "id": "EV-5-prior-agent_acceptance",
+      "team": "Data Platform",
+      "metric": "agent_acceptance",
+      "unit": "%",
+      "value": 60.0,
+      "numerator": 2700,
+      "denominator": 4500,
+      "window": {
+        "start": "2026-08-04",
+        "end": "2026-08-31"
+      },
+      "period": "prior",
+      "sourceRefs": [
+        "data/generated/fixtures/team-5/agent-edits.json",
+        "SQL:agent_acceptance;team=Data Platform;start=2026-08-04;end=2026-08-31"
+      ],
+      "datasetVersion": "60cfdc0e6a9e5d15",
+      "eligible": true,
+      "completeness": 1.0
+    },
+    {
+      "id": "EV-5-prior-active_share",
+      "team": "Data Platform",
+      "metric": "active_share",
+      "unit": "%",
+      "value": 72.0,
+      "numerator": 720,
+      "denominator": 1000,
+      "window": {
+        "start": "2026-08-04",
+        "end": "2026-08-31"
+      },
+      "period": "prior",
+      "sourceRefs": [
+        "data/generated/fixtures/team-5/dau.json",
+        "SQL:active_share;team=Data Platform;start=2026-08-04;end=2026-08-31"
+      ],
+      "datasetVersion": "60cfdc0e6a9e5d15",
+      "eligible": true,
+      "completeness": 1.0
+    },
+    {
+      "id": "EV-5-prior-ai_commit_share",
+      "team": "Data Platform",
+      "metric": "ai_commit_share",
+      "unit": "%",
+      "value": 39.0,
+      "numerator": 2418,
+      "denominator": 6200,
+      "window": {
+        "start": "2026-08-04",
+        "end": "2026-08-31"
+      },
+      "period": "prior",
+      "sourceRefs": [
+        "data/generated/fixtures/commits-3.json#01a517bf13874db6e6fa64db96a7f6449ee30f4c",
+        "data/generated/fixtures/commits-3.json#0ece2f307339f52a09145f22f65a3207603bf701",
+        "data/generated/fixtures/commits-3.json#0fbbf8928e0cfec7e11a1dec041a3424809ceb90",
+        "data/generated/fixtures/commits-3.json#1f9ebe35891e6084408dce2689ed4ef9f9117775",
+        "data/generated/fixtures/commits-3.json#5464f199364315960c01ae7e6db724b4141ea64e",
+        "data/generated/fixtures/commits-3.json#5934c9b2670241f8034fb36fe63e96105ba9e937",
+        "data/generated/fixtures/commits-3.json#5f628883bebf135de64c1c113b5adbe84206d1de",
+        "data/generated/fixtures/commits-3.json#63ba5f8c89eecd6d6f5f02932aba0d08066d0598",
+        "data/generated/fixtures/commits-3.json#73489db2625c72078e75e0d4cf05f321a832b072",
+        "data/generated/fixtures/commits-3.json#7355da26fded0aa89fb46a954331666e8b974c89",
+        "data/generated/fixtures/commits-3.json#812f797946560b36a9698739d17ac856bff96ed4",
+        "data/generated/fixtures/commits-3.json#86a88c406a0ad1b62c4622e1740687a466dd74b6",
+        "data/generated/fixtures/commits-3.json#8fb9b705ac4343cc60c65afd4f4ba42b4862f7a5",
+        "data/generated/fixtures/commits-3.json#aa6137855ee4d2940ad7b0dc9a545e4b86de27c7",
+        "data/generated/fixtures/commits-3.json#c33a8320fbaf94740d15895d355e89316b94f1e9",
+        "data/generated/fixtures/commits-3.json#c67cc8e53ffaf3ba0e7af88642965a21862cbb89",
+        "data/generated/fixtures/commits-3.json#eb1ad0b51d7fe4e5f8774f6c3665b22d6e01cf9c",
+        "data/generated/fixtures/commits-3.json#ee3628002bd7c01bab93207964edb842ed7ccd86",
+        "data/generated/fixtures/commits-3.json#f7d356fb0b614c65c2f6257f08f6fab039c9c5a5",
+        "data/generated/fixtures/commits-3.json#fe113303bcf605d605336d8ad923c61489de2151"
+      ],
+      "datasetVersion": "60cfdc0e6a9e5d15",
+      "eligible": true,
+      "completeness": 1.0
+    },
+    {
+      "id": "EV-5-current-agent_acceptance",
+      "team": "Data Platform",
+      "metric": "agent_acceptance",
+      "unit": "%",
+      "value": 70.0,
+      "numerator": 3290,
+      "denominator": 4700,
+      "window": {
+        "start": "2026-09-01",
+        "end": "2026-09-28"
+      },
+      "period": "current",
+      "sourceRefs": [
+        "data/generated/fixtures/team-5/agent-edits.json",
+        "SQL:agent_acceptance;team=Data Platform;start=2026-09-01;end=2026-09-28"
+      ],
+      "datasetVersion": "60cfdc0e6a9e5d15",
+      "eligible": true,
+      "completeness": 1.0
+    },
+    {
+      "id": "EV-5-current-active_share",
+      "team": "Data Platform",
+      "metric": "active_share",
+      "unit": "%",
+      "value": 72.0,
+      "numerator": 720,
+      "denominator": 1000,
+      "window": {
+        "start": "2026-09-01",
+        "end": "2026-09-28"
+      },
+      "period": "current",
+      "sourceRefs": [
+        "data/generated/fixtures/team-5/dau.json",
+        "SQL:active_share;team=Data Platform;start=2026-09-01;end=2026-09-28"
+      ],
+      "datasetVersion": "60cfdc0e6a9e5d15",
+      "eligible": true,
+      "completeness": 1.0
+    },
+    {
+      "id": "EV-5-current-ai_commit_share",
+      "team": "Data Platform",
+      "metric": "ai_commit_share",
+      "unit": "%",
+      "value": 39.0,
+      "numerator": 2691,
+      "denominator": 6900,
+      "window": {
+        "start": "2026-09-01",
+        "end": "2026-09-28"
+      },
+      "period": "current",
+      "sourceRefs": [
+        "data/generated/fixtures/commits-4.json#0da8820cd4cbe26eb84b5ba4a5441643b1e49549",
+        "data/generated/fixtures/commits-4.json#1b8ca663d1a0af5d0a24861cc7ec46fa0e982b5e",
+        "data/generated/fixtures/commits-4.json#24356fca7e0824bec439355e5767a7a553e6fd49",
+        "data/generated/fixtures/commits-4.json#350fc3e7bf859a8adc5c4686558ddcb49388b715",
+        "data/generated/fixtures/commits-4.json#3bd1f3f068d434c10cd07eea7fd8397a6fdc2704",
+        "data/generated/fixtures/commits-4.json#4104691a552df39c8de56ecc8adbdc84c54f423f",
+        "data/generated/fixtures/commits-4.json#4333e81ccfe4eef0ec9b3194b5cdec3b498f4439",
+        "data/generated/fixtures/commits-4.json#450f1b65487886ebbac6f075d6d5d3f3f9a7130c",
+        "data/generated/fixtures/commits-4.json#50f4ded76e883c6facc173f3e61babe36f378a94",
+        "data/generated/fixtures/commits-4.json#5c2bd90a0ec775a631dfb44ab1190d6d2fc9c223",
+        "data/generated/fixtures/commits-4.json#726c15e5fa8a0f019d78f0473dc62310bd6b66af",
+        "data/generated/fixtures/commits-4.json#8224039a993456212771a9fcdac0af7c11547805",
+        "data/generated/fixtures/commits-4.json#8fe7c141e707f85172582754e9ade929af84d0b1",
+        "data/generated/fixtures/commits-4.json#9282ee5c14d42adb3909894f6a7f5172c5f1fb49",
+        "data/generated/fixtures/commits-4.json#9efb07064bc452066279a5c080839d52bd35d53c",
+        "data/generated/fixtures/commits-4.json#a47dd4ad4b604840b81b76dd4f67ac16a2f5250f",
+        "data/generated/fixtures/commits-4.json#a859ce542d5574f19c6fd80d98f3bff7084fd045",
+        "data/generated/fixtures/commits-4.json#bcbbe44dc0e3ad00e4069d10be7cc7e3d7490dd6",
+        "data/generated/fixtures/commits-4.json#c191a2f94861d990daf4c05ed79a26bd7ec7270a",
+        "data/generated/fixtures/commits-4.json#cc9ed56e4550f01f722ccbb52aeb12a98662be91"
+      ],
+      "datasetVersion": "60cfdc0e6a9e5d15",
+      "eligible": true,
+      "completeness": 1.0
+    },
+    {
+      "id": "EV-6-prior-agent_acceptance",
+      "team": "Developer Platform",
+      "metric": "agent_acceptance",
+      "unit": "%",
+      "value": 74.0,
+      "numerator": 4292,
+      "denominator": 5800,
+      "window": {
+        "start": "2026-08-04",
+        "end": "2026-08-31"
+      },
+      "period": "prior",
+      "sourceRefs": [
+        "data/generated/fixtures/team-6/agent-edits.json",
+        "SQL:agent_acceptance;team=Developer Platform;start=2026-08-04;end=2026-08-31"
+      ],
+      "datasetVersion": "60cfdc0e6a9e5d15",
+      "eligible": true,
+      "completeness": 1.0
+    },
+    {
+      "id": "EV-6-prior-active_share",
+      "team": "Developer Platform",
+      "metric": "active_share",
+      "unit": "%",
+      "value": 88.0,
+      "numerator": 704,
+      "denominator": 800,
+      "window": {
+        "start": "2026-08-04",
+        "end": "2026-08-31"
+      },
+      "period": "prior",
+      "sourceRefs": [
+        "data/generated/fixtures/team-6/dau.json",
+        "SQL:active_share;team=Developer Platform;start=2026-08-04;end=2026-08-31"
+      ],
+      "datasetVersion": "60cfdc0e6a9e5d15",
+      "eligible": true,
+      "completeness": 1.0
+    },
+    {
+      "id": "EV-6-prior-ai_commit_share",
+      "team": "Developer Platform",
+      "metric": "ai_commit_share",
+      "unit": "%",
+      "value": null,
+      "numerator": 0,
+      "denominator": 0,
+      "window": {
+        "start": "2026-08-04",
+        "end": "2026-08-31"
+      },
+      "period": "prior",
+      "sourceRefs": [],
+      "datasetVersion": "60cfdc0e6a9e5d15",
+      "eligible": false,
+      "completeness": 1.0
+    },
+    {
+      "id": "EV-6-current-agent_acceptance",
+      "team": "Developer Platform",
+      "metric": "agent_acceptance",
+      "unit": "%",
+      "value": 76.0,
+      "numerator": 3724,
+      "denominator": 4900,
+      "window": {
+        "start": "2026-09-01",
+        "end": "2026-09-28"
+      },
+      "period": "current",
+      "sourceRefs": [
+        "data/generated/fixtures/team-6/agent-edits.json",
+        "SQL:agent_acceptance;team=Developer Platform;start=2026-09-01;end=2026-09-28"
+      ],
+      "datasetVersion": "60cfdc0e6a9e5d15",
+      "eligible": true,
+      "completeness": 1.0
+    },
+    {
+      "id": "EV-6-current-active_share",
+      "team": "Developer Platform",
+      "metric": "active_share",
+      "unit": "%",
+      "value": 88.0,
+      "numerator": 704,
+      "denominator": 800,
+      "window": {
+        "start": "2026-09-01",
+        "end": "2026-09-28"
+      },
+      "period": "current",
+      "sourceRefs": [
+        "data/generated/fixtures/team-6/dau.json",
+        "SQL:active_share;team=Developer Platform;start=2026-09-01;end=2026-09-28"
+      ],
+      "datasetVersion": "60cfdc0e6a9e5d15",
+      "eligible": true,
+      "completeness": 1.0
+    },
+    {
+      "id": "EV-6-current-ai_commit_share",
+      "team": "Developer Platform",
+      "metric": "ai_commit_share",
+      "unit": "%",
+      "value": null,
+      "numerator": 0,
+      "denominator": 0,
+      "window": {
+        "start": "2026-09-01",
+        "end": "2026-09-28"
+      },
+      "period": "current",
+      "sourceRefs": [],
+      "datasetVersion": "60cfdc0e6a9e5d15",
+      "eligible": false,
+      "completeness": 1.0
+    }
+  ],
+  "quality": {
+    "quarantined": [],
+    "duplicatesRemoved": 0
+  },
+  "limitations": [
+    "Synthetic observations; no causal productivity inference.",
+    "Monday-Friday calendar; no holiday adjustments.",
+    "Commit attribution covers tracked commits only; repository coverage unknown."
+  ]
+}
